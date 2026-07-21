@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pixel Art Generator</title>
+    <title>PixelMind - AI Art Generator</title>
     <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #1a1a2e;
+            --surface2: #222240;
+            --text: #e8e8f0;
+            --text2: #9898b0;
+            --accent: #6c5ce7;
+            --accent2: #a855f7;
+            --border: #2a2a40;
+            --danger: #ef4444;
+            --radius: 20px;
+            --radius-sm: 12px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,793 +26,842 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            font-family: 'Georgia', serif;
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             padding: 20px;
-            color: #e0d5c1;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            width: 100%;
-            max-width: 800px;
+            padding: 32px 20px 8px;
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            color: #c9a96e;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            letter-spacing: 3px;
-            margin-bottom: 10px;
+        .logo {
+            font-size: 2.4em;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
         }
 
-        .subtitle {
-            font-style: italic;
-            color: #a68a64;
-            font-size: 1.1em;
+        .tagline {
+            color: var(--text2);
+            font-size: 0.95em;
+            font-weight: 500;
         }
 
-        .controls {
-            background: rgba(20, 20, 40, 0.8);
-            border: 2px solid #c9a96e;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            width: 100%;
-            max-width: 800px;
-            backdrop-filter: blur(10px);
+        .search-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            backdrop-filter: blur(20px);
         }
 
-        .input-group {
+        .input-wrapper {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 6px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
         }
 
         #themeInput {
             flex: 1;
-            padding: 15px 20px;
-            background: rgba(30, 30, 60, 0.9);
-            border: 2px solid #4a4a6a;
-            border-radius: 10px;
-            color: #e0d5c1;
-            font-family: 'Georgia', serif;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            padding: 14px 16px;
+            color: var(--text);
+            font-size: 1.05em;
+            font-family: inherit;
             outline: none;
-        }
-
-        #themeInput:focus {
-            border-color: #c9a96e;
-            box-shadow: 0 0 20px rgba(201, 169, 110, 0.3);
+            letter-spacing: -0.2px;
         }
 
         #themeInput::placeholder {
-            color: #6a6a8a;
-            font-style: italic;
+            color: #5a5a7a;
         }
 
-        .generate-btn {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #c9a96e, #8b6914);
+        .btn-generate {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             border: none;
+            color: white;
+            padding: 14px 24px;
             border-radius: 10px;
-            color: #1a1a2e;
-            font-size: 1.1em;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.95em;
             cursor: pointer;
-            font-family: 'Georgia', serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: -0.2px;
+            transition: all 0.2s ease;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .generate-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(201, 169, 110, 0.4);
+        .btn-generate:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
         }
 
-        .generate-btn:disabled {
-            opacity: 0.6;
+        .btn-generate:active {
+            transform: scale(0.97);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
 
-        .canvas-container {
-            position: relative;
-            background: rgba(20, 20, 40, 0.9);
-            border: 5px solid #c9a96e;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            margin-bottom: 30px;
-            display: none;
+        .btn-icon {
+            font-size: 1.2em;
         }
 
-        .canvas-container.visible {
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .suggestion-chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: var(--text2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .suggestion-chip:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: none;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        .result-card.visible {
             display: block;
         }
 
-        .frame {
-            border: 20px solid #8b6914;
-            border-image: linear-gradient(135deg, #c9a96e, #6b4914) 1;
-            padding: 5px;
-            background: #1a1a2e;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            background: #0d0d1a;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .canvas-inner {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            line-height: 0;
         }
 
         canvas {
             display: block;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            background: #000;
             max-width: 100%;
             height: auto;
         }
 
-        .artwork-info {
-            text-align: center;
-            margin-top: 15px;
-            font-style: italic;
-            color: #a68a64;
-            background: rgba(20, 20, 40, 0.8);
-            border: 1px solid #c9a96e;
-            border-radius: 8px;
-            padding: 12px 20px;
+        .art-meta {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .loading {
+        .art-title {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--text);
+            letter-spacing: -0.2px;
+            text-transform: capitalize;
+        }
+
+        .art-details {
+            color: var(--text2);
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge {
+            background: var(--surface2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            color: var(--accent2);
+            font-weight: 600;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.8);
             display: none;
-            text-align: center;
-            margin: 20px;
-            color: #c9a96e;
-            font-size: 1.2em;
+            justify-content: center;
+            align-items: center;
+            border-radius: var(--radius);
+            z-index: 10;
         }
 
-        .loading.visible {
-            display: block;
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
         }
 
         .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(201, 169, 110, 0.3);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(108, 92, 231, 0.2);
+            border-top-color: var(--accent);
             border-radius: 50%;
-            border-top-color: #c9a96e;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-            
-            .input-group {
+        .loading-text {
+            color: var(--text2);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9em;
+            display: none;
+            text-align: center;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        @media (max-width: 500px) {
+            .input-wrapper {
                 flex-direction: column;
+                gap: 8px;
+                background: transparent;
+                padding: 0;
             }
             
-            .generate-btn {
+            #themeInput {
+                background: var(--surface2);
+                border-radius: var(--radius-sm);
                 width: 100%;
+            }
+            
+            .btn-generate {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .logo {
+                font-size: 1.8em;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎨 AI Pixel Art Generator</h1>
-        <p class="subtitle">Write any theme and watch AI create unique pixel art</p>
-    </div>
-
-    <div class="controls">
-        <div class="input-group">
-            <input 
-                type="text" 
-                id="themeInput" 
-                placeholder="Enter a theme... (e.g., 'scary monster', 'sunset over mountains', 'futuristic city')"
-                maxlength="100"
-            >
-            <button class="generate-btn" id="generateBtn">Generate Art</button>
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">PixelMind</div>
+            <p class="tagline">Describe anything • AI creates unique pixel art</p>
         </div>
-    </div>
 
-    <div class="loading" id="loading">
-        <span class="spinner"></span>
-        Creating your pixel art masterpiece...
-    </div>
-
-    <div class="canvas-container" id="canvasContainer">
-        <div class="frame">
-            <canvas id="pixelCanvas"></canvas>
+        <div class="search-card">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="themeInput" 
+                    placeholder="Describe your pixel art... (e.g., 'a haunted castle at midnight')"
+                    maxlength="120"
+                    autocomplete="off"
+                >
+                <button class="btn-generate" id="generateBtn">
+                    <span class="btn-icon">✨</span> Generate
+                </button>
+            </div>
+            <div class="suggestions">
+                <span class="suggestion-chip" data-theme="scary monster with sharp teeth">👹 Scary monster</span>
+                <span class="suggestion-chip" data-theme="beautiful sunset over mountains">🌅 Mountain sunset</span>
+                <span class="suggestion-chip" data-theme="futuristic cyberpunk city">🤖 Cyberpunk city</span>
+                <span class="suggestion-chip" data-theme="ancient egyptian pyramid">🏛️ Egyptian pyramid</span>
+                <span class="suggestion-chip" data-theme="cute cat with big eyes">🐱 Cute cat</span>
+                <span class="suggestion-chip" data-theme="magical dragon breathing fire">🐉 Fire dragon</span>
+            </div>
         </div>
-        <div class="artwork-info" id="artworkInfo"></div>
+
+        <div class="error-message" id="errorMessage">
+            ⚠️ Please enter a theme or description to generate pixel art.
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <div class="canvas-inner">
+                    <canvas id="pixelCanvas"></canvas>
+                </div>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner-container">
+                        <div class="spinner"></div>
+                        <span class="loading-text">Creating pixel art...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="art-meta">
+                <div>
+                    <div class="art-title" id="artTitle">Your creation</div>
+                    <div class="art-details">
+                        <span>96×96 pixels</span>
+                        <span>•</span>
+                        <span>16-bit style</span>
+                    </div>
+                </div>
+                <span class="badge" id="styleBadge">AI Generated</span>
+            </div>
+        </div>
     </div>
 
     <script>
-        class PixelArtGenerator {
-            constructor() {
-                this.canvas = document.getElementById('pixelCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.size = 96; // 96x96 pixels for high detail
-                this.pixelSize = 6;
-                this.canvas.width = this.size * this.pixelSize;
-                this.canvas.height = this.size * this.pixelSize;
-                
-                this.init();
-            }
+        (function() {
+            // DOM Elements
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+            const themeInput = document.getElementById('themeInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const resultCard = document.getElementById('resultCard');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const errorMessage = document.getElementById('errorMessage');
+            const artTitle = document.getElementById('artTitle');
+            const styleBadge = document.getElementById('styleBadge');
+            const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
-            init() {
-                const generateBtn = document.getElementById('generateBtn');
-                const themeInput = document.getElementById('themeInput');
-                
-                generateBtn.addEventListener('click', () => this.generate());
-                themeInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.generate();
-                    }
-                });
-            }
+            // Canvas configuration - High resolution for detail
+            const GRID_SIZE = 96;
+            const PIXEL_SIZE = 6;
+            
+            canvas.width = GRID_SIZE * PIXEL_SIZE;
+            canvas.height = GRID_SIZE * PIXEL_SIZE;
 
-            generate() {
-                const themeInput = document.getElementById('themeInput');
-                const theme = themeInput.value.trim();
-                
-                if (!theme) {
-                    themeInput.focus();
-                    themeInput.style.borderColor = '#ff4444';
-                    setTimeout(() => {
-                        themeInput.style.borderColor = '#4a4a6a';
-                    }, 1500);
-                    return;
+            // Color palettes for different themes
+            const PALETTES = {
+                horror: {
+                    bg: [8, 3, 15],
+                    primary: [140, 20, 30],
+                    secondary: [60, 10, 40],
+                    accent: [220, 40, 20],
+                    highlight: [255, 200, 50],
+                    shadow: [20, 5, 25]
+                },
+                fantasy: {
+                    bg: [15, 15, 50],
+                    primary: [80, 60, 140],
+                    secondary: [40, 80, 60],
+                    accent: [220, 180, 60],
+                    highlight: [255, 240, 200],
+                    shadow: [20, 20, 40]
+                },
+                nature: {
+                    bg: [100, 160, 220],
+                    primary: [34, 139, 34],
+                    secondary: [60, 100, 40],
+                    accent: [255, 200, 50],
+                    highlight: [255, 255, 200],
+                    shadow: [20, 60, 20]
+                },
+                scifi: {
+                    bg: [5, 5, 30],
+                    primary: [60, 80, 180],
+                    secondary: [30, 40, 80],
+                    accent: [0, 200, 255],
+                    highlight: [200, 240, 255],
+                    shadow: [10, 10, 30]
+                },
+                cyberpunk: {
+                    bg: [10, 3, 20],
+                    primary: [200, 40, 120],
+                    secondary: [40, 10, 60],
+                    accent: [0, 255, 255],
+                    highlight: [255, 200, 50],
+                    shadow: [15, 5, 25]
+                },
+                ancient: {
+                    bg: [200, 170, 120],
+                    primary: [180, 140, 80],
+                    secondary: [140, 100, 50],
+                    accent: [220, 200, 100],
+                    highlight: [255, 240, 200],
+                    shadow: [80, 50, 20]
+                },
+                cute: {
+                    bg: [240, 220, 240],
+                    primary: [255, 180, 200],
+                    secondary: [200, 150, 180],
+                    accent: [255, 220, 100],
+                    highlight: [255, 255, 255],
+                    shadow: [150, 120, 140]
                 }
+            };
 
-                this.showLoading(true);
-                
-                // Simulate AI processing time
-                setTimeout(() => {
-                    const pixelData = this.createPixelArtFromTheme(theme);
-                    this.renderPixelArt(pixelData);
-                    this.showCanvas(true);
-                    this.showLoading(false);
-                    
-                    document.getElementById('artworkInfo').textContent = 
-                        `"${theme}" - AI Generated Pixel Art • ${this.size}×${this.size} pixels`;
-                }, 500);
+            function detectTheme(text) {
+                const lower = text.toLowerCase();
+                if (/monster|scary|horror|fear|creepy|demon|ghost|zombie|spooky|dark|evil/i.test(lower)) return 'horror';
+                if (/fantasy|magic|dragon|castle|wizard|fairy|knight|sword|elf/i.test(lower)) return 'fantasy';
+                if (/nature|forest|mountain|tree|sunset|ocean|river|flower|garden|landscape|sky/i.test(lower)) return 'nature';
+                if (/space|sci.fi|spaceship|alien|planet|star|galaxy|ufo|robot|laser/i.test(lower)) return 'scifi';
+                if (/cyberpunk|neon|future|dystopian|tech|hacker|digital/i.test(lower)) return 'cyberpunk';
+                if (/ancient|pyramid|egypt|temple|ruins|historical|greek|roman/i.test(lower)) return 'ancient';
+                if (/cute|cat|dog|kitten|puppy|bunny|animal|sweet|adorable|happy/i.test(lower)) return 'cute';
+                return null;
             }
 
-            createPixelArtFromTheme(theme) {
-                const pixels = this.createEmptyPixels();
-                const seed = this.hashString(theme);
-                
-                // Analyze theme for keywords
-                const themeLower = theme.toLowerCase();
-                
-                if (this.containsAny(themeLower, ['monster', 'scary', 'horror', 'fear', 'creepy', 'dark', 'demon', 'ghost'])) {
-                    this.generateMonster(pixels, seed);
-                } else if (this.containsAny(themeLower, ['castle', 'dragon', 'fantasy', 'magic', 'wizard', 'fairy', 'knight', 'medieval'])) {
-                    this.generateFantasyScene(pixels, seed);
-                } else if (this.containsAny(themeLower, ['nature', 'forest', 'mountain', 'tree', 'sunset', 'landscape', 'ocean', 'river', 'flower', 'garden'])) {
-                    this.generateNatureScene(pixels, seed);
-                } else if (this.containsAny(themeLower, ['space', 'sci-fi', 'spaceship', 'alien', 'planet', 'star', 'galaxy', 'ufo', 'robot'])) {
-                    this.generateSciFiScene(pixels, seed);
-                } else if (this.containsAny(themeLower, ['city', 'building', 'cyberpunk', 'neon', 'future', 'urban', 'dystopian'])) {
-                    this.generateCyberpunkScene(pixels, seed);
-                } else if (this.containsAny(themeLower, ['abstract', 'geometric', 'pattern', 'colorful', 'shapes'])) {
-                    this.generateAbstractArt(pixels, seed);
-                } else if (this.containsAny(themeLower, ['pyramid', 'ancient', 'egypt', 'temple', 'ruins', 'historical'])) {
-                    this.generateAncientScene(pixels, seed);
-                } else if (this.containsAny(themeLower, ['surreal', 'dream', 'melting', 'clock', 'dali', 'strange', 'weird'])) {
-                    this.generateSurrealScene(pixels, seed);
-                } else if (this.containsAny(themeLower, ['portrait', 'face', 'person', 'character', 'human'])) {
-                    this.generatePortrait(pixels, seed);
-                } else if (this.containsAny(themeLower, ['animal', 'cat', 'dog', 'bird', 'fish', 'wildlife'])) {
-                    this.generateAnimal(pixels, seed, themeLower);
-                } else {
-                    // Default: mix of styles based on theme
-                    this.generateMixedStyle(pixels, seed, theme);
-                }
-                
-                return pixels;
-            }
-
-            createEmptyPixels() {
-                return new Array(this.size).fill(null).map(() => 
-                    new Array(this.size).fill(null).map(() => [0, 0, 0])
-                );
-            }
-
-            hashString(str) {
+            function hashString(str) {
                 let hash = 0;
                 for (let i = 0; i < str.length; i++) {
                     const char = str.charCodeAt(i);
                     hash = ((hash << 5) - hash) + char;
-                    hash = hash & hash; // Convert to 32bit integer
+                    hash |= 0;
                 }
                 return Math.abs(hash);
             }
 
-            containsAny(str, keywords) {
-                return keywords.some(keyword => str.includes(keyword));
+            function seededRandom(seed) {
+                seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+                return (seed >>> 16) / 32767;
             }
 
-            seededRandom(seed, index) {
-                const x = Math.sin(seed * 12.9898 + index * 78.233) * 43758.5453;
-                return x - Math.floor(x);
+            function lerpColor(c1, c2, t) {
+                return [
+                    Math.round(c1[0] + (c2[0] - c1[0]) * t),
+                    Math.round(c1[1] + (c2[1] - c1[1]) * t),
+                    Math.round(c1[2] + (c2[2] - c1[2]) * t)
+                ];
             }
 
-            generateMonster(pixels, seed) {
-                const cx = Math.floor(this.size / 2);
-                const cy = Math.floor(this.size / 2);
-                const eyeCount = 1 + Math.floor(this.seededRandom(seed, 1) * 3);
-                
-                // Dark background
-                this.fillGradient(pixels, [10, 0, 20], [40, 10, 40], 'radial', cx, cy);
-                
-                // Body shape
-                this.drawBlob(pixels, cx, cy, 15 + this.seededRandom(seed, 2) * 20, [60, 20, 40], seed + 1);
-                
-                // Multiple eyes
-                for (let e = 0; e < eyeCount; e++) {
-                    const angle = (e / eyeCount) * Math.PI * 2 + this.seededRandom(seed, 3 + e) * 0.5;
-                    const ex = cx + Math.cos(angle) * 12;
-                    const ey = cy - 5 + Math.sin(angle) * 8;
-                    
-                    this.drawCircle(pixels, ex, ey, 4, [220, 220, 100]);
-                    this.drawCircle(pixels, ex, ey, 2, [200, 0, 0]); // Pupil
-                }
-                
-                // Mouth with teeth
-                const mouthY = cy + 8;
-                for (let y = mouthY - 2; y <= mouthY + 3; y++) {
-                    for (let x = cx - 10; x <= cx + 10; x++) {
-                        const mouthShape = Math.abs(x - cx) < (12 - Math.abs(y - mouthY) * 1.5);
-                        if (mouthShape && this.isInBounds(x, y)) {
-                            pixels[y][x] = [180, 0, 0];
-                        }
-                    }
-                }
-                
-                // Sharp teeth
-                for (let x = cx - 9; x <= cx + 9; x += 2) {
-                    const toothY = mouthY + 1;
-                    if (this.isInBounds(x, toothY)) pixels[toothY][x] = [255, 255, 255];
-                    if (this.isInBounds(x, toothY + 1)) pixels[toothY + 1][x] = [255, 255, 255];
-                }
-                
-                // Tentacles
-                for (let t = 0; t < 6; t++) {
-                    this.drawTentacle(pixels, cx, cy + 10, seed + 10 + t, t * 60);
-                }
+            function createPixelGrid() {
+                return Array.from({ length: GRID_SIZE }, () => 
+                    Array.from({ length: GRID_SIZE }, () => [0, 0, 0])
+                );
             }
 
-            generateFantasyScene(pixels, seed) {
-                // Sky gradient
-                this.fillGradient(pixels, [20, 20, 60], [80, 60, 120], 'vertical');
-                
-                // Stars
-                for (let i = 0; i < 30; i++) {
-                    const sx = Math.floor(this.seededRandom(seed + i, 100) * this.size);
-                    const sy = Math.floor(this.seededRandom(seed + i + 30, 101) * this.size * 0.6);
-                    if (this.isInBounds(sx, sy)) {
-                        pixels[sy][sx] = [255, 255, 200];
-                    }
-                }
-                
-                // Mountains
-                for (let m = 0; m < 3; m++) {
-                    const mx = 20 + m * 30;
-                    const mh = 40 + this.seededRandom(seed, 102 + m) * 30;
-                    this.drawTriangle(pixels, mx, this.size - 10, mh, [60, 50, 70]);
-                }
-                
-                // Castle
-                const castleX = Math.floor(this.size / 2);
-                this.drawCastle(pixels, castleX, this.size - 15, seed);
-                
-                // Moon
-                this.drawCircle(pixels, this.size - 15, 15, 10, [255, 255, 200]);
+            function isInBounds(x, y) {
+                return x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE;
             }
 
-            generateNatureScene(pixels, seed) {
-                // Sky
-                this.fillGradient(pixels, [135, 206, 235], [255, 200, 100], 'vertical');
+            function drawCircle(grid, cx, cy, radius, color) {
+                const r2 = radius * radius;
+                const startY = Math.max(0, Math.floor(cy - radius));
+                const endY = Math.min(GRID_SIZE - 1, Math.ceil(cy + radius));
+                const startX = Math.max(0, Math.floor(cx - radius));
+                const endX = Math.min(GRID_SIZE - 1, Math.ceil(cx + radius));
                 
-                // Sun
-                this.drawCircle(pixels, this.size - 20, 15, 12, [255, 255, 100]);
-                
-                // Ground
-                for (let y = this.size - 25; y < this.size; y++) {
-                    for (let x = 0; x < this.size; x++) {
-                        const shade = 34 + this.seededRandom(seed + x + y * this.size, 200) * 30;
-                        pixels[y][x] = [Math.floor(shade), Math.floor(shade * 2.2), Math.floor(shade * 0.4)];
-                    }
-                }
-                
-                // Trees
-                for (let t = 0; t < 6; t++) {
-                    const tx = 10 + t * 15 + Math.floor(this.seededRandom(seed + t, 201) * 8);
-                    this.drawTree(pixels, tx, this.size - 25, 25 + this.seededRandom(seed + t + 6, 202) * 20, seed + t);
-                }
-                
-                // Flowers
-                for (let f = 0; f < 15; f++) {
-                    const fx = Math.floor(this.seededRandom(seed + f + 100, 203) * this.size);
-                    const fy = this.size - 5 - Math.floor(this.seededRandom(seed + f + 115, 204) * 5);
-                    this.drawFlower(pixels, fx, fy, seed + f + 200);
-                }
-            }
-
-            generateSciFiScene(pixels, seed) {
-                // Space
-                this.fillSolid(pixels, [5, 5, 25]);
-                
-                // Stars
-                for (let i = 0; i < 100; i++) {
-                    const sx = Math.floor(this.seededRandom(seed + i, 300) * this.size);
-                    const sy = Math.floor(this.seededRandom(seed + i + 100, 301) * this.size);
-                    if (this.isInBounds(sx, sy)) {
-                        const brightness = 150 + Math.floor(this.seededRandom(seed + i + 200, 302) * 105);
-                        pixels[sy][sx] = [brightness, brightness, brightness];
-                    }
-                }
-                
-                // Planet
-                const px = Math.floor(this.size * 0.3);
-                const py = Math.floor(this.size * 0.4);
-                this.drawCircle(pixels, px, py, 15, [100, 150, 200]);
-                // Planet ring
-                this.drawEllipse(pixels, px, py, 25, 5, [150, 200, 255]);
-                
-                // Spaceship
-                const sx = Math.floor(this.size * 0.7);
-                const sy = Math.floor(this.size * 0.5);
-                this.drawSpaceship(pixels, sx, sy, seed);
-            }
-
-            generateCyberpunkScene(pixels, seed) {
-                // Dark city
-                this.fillGradient(pixels, [10, 5, 20], [30, 10, 40], 'vertical');
-                
-                // Buildings
-                for (let b = 0; b < 12; b++) {
-                    const bx = 5 + b * 8;
-                    const bh = 30 + Math.floor(this.seededRandom(seed + b, 400) * 40);
-                    
-                    for (let y = this.size - bh; y < this.size; y++) {
-                        for (let x = bx; x < bx + 6; x++) {
-                            if (this.isInBounds(x, y)) {
-                                pixels[y][x] = [25, 25, 35];
-                                // Windows
-                                if ((x - bx) % 3 === 1 && (this.size - y) % 5 === 1) {
-                                    const windowColor = this.seededRandom(seed + b + x + y, 401) > 0.5 ? 
-                                        [255, 255, 100] : [100, 255, 255];
-                                    pixels[y][x] = windowColor;
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Neon signs
-                for (let n = 0; n < 8; n++) {
-                    const nx = 10 + n * 10;
-                    const ny = 20 + Math.floor(this.seededRandom(seed + n + 500, 402) * 30);
-                    const neonColor = [[255, 0, 255], [0, 255, 255], [255, 255, 0], [255, 0, 128]][n % 4];
-                    
-                    for (let i = 0; i < 8; i++) {
-                        const signX = nx + i;
-                        const signY = ny;
-                        if (this.isInBounds(signX, signY)) {
-                            pixels[signY][signX] = neonColor;
+                for (let y = startY; y <= endY; y++) {
+                    for (let x = startX; x <= endX; x++) {
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        if (dx * dx + dy * dy <= r2) {
+                            grid[y][x] = [...color];
                         }
                     }
                 }
             }
 
-            generateAbstractArt(pixels, seed) {
-                // Colorful background
-                for (let y = 0; y < this.size; y++) {
-                    for (let x = 0; x < this.size; x++) {
-                        pixels[y][x] = [
-                            Math.floor(100 + Math.sin(x * 0.1) * 50 + Math.cos(y * 0.1) * 50),
-                            Math.floor(100 + Math.cos(x * 0.15) * 50 + Math.sin(y * 0.08) * 50),
-                            Math.floor(100 + Math.sin(x * 0.08 + y * 0.1) * 50)
-                        ];
-                    }
-                }
+            function drawEllipse(grid, cx, cy, rx, ry, color) {
+                const startY = Math.max(0, Math.floor(cy - ry));
+                const endY = Math.min(GRID_SIZE - 1, Math.ceil(cy + ry));
+                const startX = Math.max(0, Math.floor(cx - rx));
+                const endX = Math.min(GRID_SIZE - 1, Math.ceil(cx + rx));
                 
-                // Geometric shapes
-                for (let s = 0; s < 8; s++) {
-                    const sx = Math.floor(this.seededRandom(seed + s, 500) * this.size);
-                    const sy = Math.floor(this.seededRandom(seed + s + 8, 501) * this.size);
-                    const color = [
-                        Math.floor(this.seededRandom(seed + s + 16, 502) * 255),
-                        Math.floor(this.seededRandom(seed + s + 24, 503) * 255),
-                        Math.floor(this.seededRandom(seed + s + 32, 504) * 255)
-                    ];
-                    
-                    if (s % 3 === 0) {
-                        this.drawCircle(pixels, sx, sy, 10 + Math.floor(this.seededRandom(seed + s + 40, 505) * 15), color);
-                    } else if (s % 3 === 1) {
-                        this.drawSquare(pixels, sx, sy, 8 + Math.floor(this.seededRandom(seed + s + 48, 506) * 12), color);
-                    } else {
-                        this.drawTriangle(pixels, sx, sy, 12 + Math.floor(this.seededRandom(seed + s + 56, 507) * 15), color);
+                for (let y = startY; y <= endY; y++) {
+                    for (let x = startX; x <= endX; x++) {
+                        const dx = (x - cx) / rx;
+                        const dy = (y - cy) / ry;
+                        if (dx * dx + dy * dy <= 1) {
+                            grid[y][x] = [...color];
+                        }
                     }
                 }
             }
 
-            generateAncientScene(pixels, seed) {
-                // Sand background
-                for (let y = 0; y < this.size; y++) {
-                    for (let x = 0; x < this.size; x++) {
-                        const shade = 180 + this.seededRandom(seed + x + y * this.size, 600) * 40;
-                        pixels[y][x] = [Math.floor(shade), Math.floor(shade * 0.8), Math.floor(shade * 0.5)];
+            function drawRect(grid, x1, y1, x2, y2, color) {
+                const startX = Math.max(0, Math.min(x1, x2));
+                const endX = Math.min(GRID_SIZE - 1, Math.max(x1, x2));
+                const startY = Math.max(0, Math.min(y1, y2));
+                const endY = Math.min(GRID_SIZE - 1, Math.max(y1, y2));
+                
+                for (let y = startY; y <= endY; y++) {
+                    for (let x = startX; x <= endX; x++) {
+                        grid[y][x] = [...color];
                     }
                 }
+            }
+
+            function drawTriangle(grid, cx, baseY, height, color, pointingUp = true) {
+                const topY = pointingUp ? baseY - height : baseY + height;
+                const startY = Math.max(0, Math.min(baseY, topY));
+                const endY = Math.min(GRID_SIZE - 1, Math.max(baseY, topY));
                 
-                // Sky
-                for (let y = 0; y < this.size * 0.3; y++) {
-                    for (let x = 0; x < this.size; x++) {
-                        const blueShade = 100 + (y / (this.size * 0.3)) * 100;
-                        pixels[y][x] = [Math.floor(blueShade * 0.5), Math.floor(blueShade * 0.7), Math.floor(blueShade)];
-                    }
-                }
-                
-                // Pyramid
-                const px = Math.floor(this.size / 2);
-                const py = this.size - 20;
-                const ph = 45;
-                
-                for (let y = py - ph; y < py; y++) {
-                    const width = (py - y) * 1.5;
-                    const startX = px - Math.floor(width / 2);
-                    const endX = px + Math.floor(width / 2);
+                for (let y = startY; y <= endY; y++) {
+                    const progress = pointingUp ? (baseY - y) / height : (y - baseY) / height;
+                    const halfWidth = height * progress * 0.6;
+                    const startX = Math.max(0, Math.floor(cx - halfWidth));
+                    const endX = Math.min(GRID_SIZE - 1, Math.ceil(cx + halfWidth));
                     
                     for (let x = startX; x <= endX; x++) {
-                        if (this.isInBounds(x, y)) {
-                            const shade = 180 + (py - y) * 1.5;
-                            pixels[y][x] = [Math.floor(shade), Math.floor(shade * 0.75), Math.floor(shade * 0.4)];
-                        }
+                        grid[y][x] = [...color];
                     }
                 }
             }
 
-            generateSurrealScene(pixels, seed) {
-                // Dreamy background
-                this.fillGradient(pixels, [255, 200, 150], [150, 100, 200], 'vertical');
-                
-                // Melting clocks
-                for (let c = 0; c < 3; c++) {
-                    const cx = 20 + c * 25;
-                    const cy = 30 + c * 20;
-                    this.drawMeltingClock(pixels, cx, cy, seed + c);
-                }
-                
-                // Floating objects
-                for (let o = 0; o < 5; o++) {
-                    const ox = Math.floor(this.seededRandom(seed + o, 700) * this.size);
-                    const oy = Math.floor(this.seededRandom(seed + o + 5, 701) * this.size);
-                    this.drawCircle(pixels, ox, oy, 5, [200, 150, 200]);
-                }
-            }
-
-            generatePortrait(pixels, seed) {
-                // Face background
-                this.fillSolid(pixels, [40, 30, 30]);
-                
-                const cx = Math.floor(this.size / 2);
-                const cy = Math.floor(this.size / 2);
-                
-                // Face shape
-                this.drawEllipse(pixels, cx, cy, 20, 28, [220, 180, 140]);
-                
-                // Eyes
-                this.drawCircle(pixels, cx - 8, cy - 5, 3, [255, 255, 255]);
-                this.drawCircle(pixels, cx + 8, cy - 5, 3, [255, 255, 255]);
-                this.drawCircle(pixels, cx - 8, cy - 5, 1.5, [50, 100, 200]);
-                this.drawCircle(pixels, cx + 8, cy - 5, 1.5, [50, 100, 200]);
-                
-                // Nose
-                this.drawLine(pixels, cx, cy - 2, cx, cy + 5, [200, 160, 120], 2);
-                
-                // Mouth
-                for (let x = cx - 6; x <= cx + 6; x++) {
-                    const my = cy + 10 + Math.sin((x - cx) * 0.3) * 2;
-                    const mpy = Math.floor(my);
-                    const mpx = Math.floor(x);
-                    if (this.isInBounds(mpx, mpy)) {
-                        pixels[mpy][mpx] = [180, 100, 100];
-                    }
-                }
-                
-                // Hair
-                for (let y = cy - 25; y < cy - 5; y++) {
-                    for (let x = cx - 18; x <= cx + 18; x++) {
-                        const dist = Math.sqrt((x - cx) ** 2 + (y - cy + 15) ** 2);
-                        if (dist < 22 && dist > 18 && this.isInBounds(x, y)) {
-                            pixels[y][x] = [60, 40, 20];
-                        }
-                    }
-                }
-            }
-
-            generateAnimal(pixels, seed, theme) {
-                this.fillSolid(pixels, [200, 220, 200]);
-                
-                const cx = Math.floor(this.size / 2);
-                const cy = Math.floor(this.size / 2);
-                
-                // Body
-                this.drawEllipse(pixels, cx, cy + 10, 25, 20, [150, 130, 100]);
-                
-                // Head
-                this.drawCircle(pixels, cx, cy - 10, 12, [150, 130, 100]);
-                
-                // Eyes
-                this.drawCircle(pixels, cx - 4, cy - 13, 2, [255, 255, 255]);
-                this.drawCircle(pixels, cx + 4, cy - 13, 2, [255, 255, 255]);
-                this.drawCircle(pixels, cx - 4, cy - 13, 1, [0, 0, 0]);
-                this.drawCircle(pixels, cx + 4, cy - 13, 1, [0, 0, 0]);
-                
-                // Nose
-                this.drawCircle(pixels, cx, cy - 8, 2, [0, 0, 0]);
-                
-                // Ears
-                this.drawTriangle(pixels, cx - 10, cy - 18, 8, [150, 130, 100]);
-                this.drawTriangle(pixels, cx + 10, cy - 18, 8, [150, 130, 100]);
-                
-                // Legs
-                for (let l = 0; l < 2; l++) {
-                    const lx = cx - 8 + l * 16;
-                    for (let y = cy + 25; y < cy + 35; y++) {
-                        for (let x = lx - 2; x <= lx + 2; x++) {
-                            if (this.isInBounds(x, y)) {
-                                pixels[y][x] = [120, 100, 80];
-                            }
-                        }
-                    }
-                }
-            }
-
-            generateMixedStyle(pixels, seed, theme) {
-                // Create a unique style based on the theme string
-                const hash = this.hashString(theme);
-                
-                for (let y = 0; y < this.size; y++) {
-                    for (let x = 0; x < this.size; x++) {
-                        const r = Math.floor(Math.abs(Math.sin(hash + x * 0.1 + y * 0.15)) * 200) + 20;
-                        const g = Math.floor(Math.abs(Math.cos(hash + x * 0.08 + y * 0.12)) * 200) + 20;
-                        const b = Math.floor(Math.abs(Math.sin(hash + x * 0.12 + y * 0.09)) * 200) + 20;
-                        
-                        pixels[y][x] = [
-                            Math.min(255, r),
-                            Math.min(255, g),
-                            Math.min(255, b)
-                        ];
-                    }
-                }
-                
-                // Add some shapes based on theme
-                const shapes = (hash % 5) + 3;
-                for (let s = 0; s < shapes; s++) {
-                    const sx = Math.floor(this.seededRandom(seed + s, 800) * this.size);
-                    const sy = Math.floor(this.seededRandom(seed + s + shapes, 801) * this.size);
-                    
-                    if (hash % 3 === 0) {
-                        this.drawCircle(pixels, sx, sy, 10 + s * 5, [255 - s * 30, 100 + s * 20, 200 - s * 20]);
-                    } else {
-                        this.drawSquare(pixels, sx, sy, 10 + s * 4, [100 + s * 25, 200 - s * 20, 255 - s * 30]);
-                    }
-                }
-            }
-
-            // Drawing helper functions
-            drawCircle(pixels, cx, cy, radius, color) {
-                for (let y = Math.floor(cy - radius); y <= Math.ceil(cy + radius); y++) {
-                    for (let x = Math.floor(cx - radius); x <= Math.ceil(cx + radius); x++) {
-                        const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-                        if (dist <= radius && this.isInBounds(x, y)) {
-                            pixels[y][x] = [...color];
-                        }
-                    }
-                }
-            }
-
-            drawEllipse(pixels, cx, cy, rx, ry, color) {
-                for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
-                    for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
-                        const dist = ((x - cx) ** 2) / (rx ** 2) + ((y - cy) ** 2) / (ry ** 2);
-                        if (dist <= 1 && this.isInBounds(x, y)) {
-                            pixels[y][x] = [...color];
-                        }
-                    }
-                }
-            }
-
-            drawSquare(pixels, cx, cy, size, color) {
-                const halfSize = Math.floor(size / 2);
-                for (let y = cy - halfSize; y <= cy + halfSize; y++) {
-                    for (let x = cx - halfSize; x <= cx + halfSize; x++) {
-                        if (this.isInBounds(x, y)) {
-                            pixels[y][x] = [...color];
-                        }
-                    }
-                }
-            }
-
-            drawTriangle(pixels, cx, bottomY, height, color) {
-                for (let y = bottomY - height; y <= bottomY; y++) {
-                    const progress = (bottomY - y) / height;
-                    const width = height * progress * 0.8;
-                    const startX = Math.floor(cx - width / 2);
-                    const endX = Math.floor(cx + width / 2);
-                    
-                    for (let x = startX; x <= endX; x++) {
-                        if (this.isInBounds(x, y)) {
-                            pixels[y][x] = [...color];
-                        }
-                    }
-                }
-            }
-
-            drawBlob(pixels, cx, cy, size, color, seed) {
-                for (let y = Math.floor(cy - size); y <= Math.ceil(cy + size); y++) {
-                    for (let x = Math.floor(cx - size); x <= Math.ceil(cx + size); x++) {
-                        const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-                        const noise = Math.sin(this.seededRandom(seed + x + y * 1000, 900) * Math.PI * 2) * 5;
-                        if (dist <= size + noise && this.isInBounds(x, y)) {
-                            pixels[y][x] = [...color];
-                        }
-                    }
-                }
-            }
-
-            drawLine(pixels, x1, y1, x2, y2, color, thickness) {
+            function drawLine(grid, x1, y1, x2, y2, color, thickness = 1) {
+                let x = x1;
+                let y = y1;
                 const dx = Math.abs(x2 - x1);
                 const dy = Math.abs(y2 - y1);
                 const sx = x1 < x2 ? 1 : -1;
                 const sy = y1 < y2 ? 1 : -1;
                 let err = dx - dy;
-                let x = x1;
-                let y = y1;
                 
                 while (true) {
                     for (let ty = -thickness; ty <= thickness; ty++) {
                         for (let tx = -thickness; tx <= thickness; tx++) {
-                            if (this.isInBounds(x + tx, y + ty)) {
-                                pixels[y + ty][x + tx] = [...color];
+                            if (isInBounds(x + tx, y + ty)) {
+                                grid[y + ty][x + tx] = [...color];
                             }
                         }
                     }
                     
                     if (x === x2 && y === y2) break;
                     const e2 = 2 * err;
-                    if (e2 > -dy) {
-                        err -= dy;
-                        x += sx;
-                    }
-                    if (e2 < dx) {
-                        err += dx;
-                        y += sy;
+                    if (e2 > -dy) { err -= dy; x += sx; }
+                    if (e2 < dx) { err += dx; y += sy; }
+                }
+            }
+
+            function addNoise(grid, seed, intensity = 15) {
+                let s = seed;
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        s = (s * 1103515245 + 12345) & 0x7fffffff;
+                        const noise = (s >>> 16) / 32767 * intensity - intensity / 2;
+                        grid[y][x] = grid[y][x].map(c => Math.max(0, Math.min(255, Math.round(c + noise))));
                     }
                 }
             }
 
-            drawTentacle(pixels, startX, startY, seed, angleOffset) {
-                let x = startX;
-                let y = startY;
-                const angle = angleOffset * Math.PI / 180;
+            // Scene generators
+            function generateHorrorScene(grid, seed, palette) {
+                let s = seed;
+                // Dark background with gradient
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const t = y / GRID_SIZE;
+                        grid[y][x] = lerpColor(palette.bg, palette.shadow, t);
+                    }
+                }
                 
-                for (let i = 0; i < 20; i++) {
-                    const wobble = this.seededRandom(seed + i, 1000) * 2 - 1;
-                    x += Math.cos
+                const cx = GRID_SIZE / 2;
+                const cy = GRID_SIZE / 2;
+                
+                // Monster body
+                const bodySize = 22 + (seededRandom(s++) * 15);
+                drawEllipse(grid, cx, cy + 5, bodySize, bodySize * 1.3, palette.primary);
+                
+                // Texture on body
+                for (let i = 0; i < 40; i++) {
+                    const tx = cx - bodySize + seededRandom(s++) * bodySize * 2;
+                    const ty = cy + 5 - bodySize * 1.3 + seededRandom(s++) * bodySize * 2.6;
+                    if (isInBounds(Math.round(tx), Math.round(ty))) {
+                        grid[Math.round(ty)][Math.round(tx)] = palette.secondary;
+                    }
+                }
+                
+                // Eyes - multiple eyes for horror effect
+                const eyeCount = 3 + Math.floor(seededRandom(s++) * 4);
+                for (let e = 0; e < eyeCount; e++) {
+                    const angle = (e / eyeCount) * Math.PI * 2 + seededRandom(s++) * 0.8;
+                    const ex = cx + Math.cos(angle) * (bodySize * 0.5);
+                    const ey = cy - 5 + Math.sin(angle) * (bodySize * 0.4);
+                    
+                    drawEllipse(grid, Math.round(ex), Math.round(ey), 5, 5, palette.highlight);
+                    drawEllipse(grid, Math.round(ex), Math.round(ey), 2.5, 2.5, [200, 20, 20]);
+                    // Bloodshot
+                    for (let r = 0; r < 8; r++) {
+                        const rx = ex + (seededRandom(s++) - 0.5) * 8;
+                        const ry = ey + (seededRandom(s++) - 0.5) * 8;
+                        if (isInBounds(Math.round(rx), Math.round(ry))) {
+                            grid[Math.round(ry)][Math.round(rx)] = [180, 30, 30];
+                        }
+                    }
+                }
+                
+                // Mouth with teeth
+                const mouthY = cy + bodySize * 0.7;
+                const mouthW = bodySize * 0.6;
+                drawEllipse(grid, cx, mouthY, mouthW, 8, [30, 5, 5]);
+                
+                // Teeth
+                for (let t = -mouthW + 2; t <= mouthW - 2; t += 3) {
+                    const tx = cx + t;
+                    const ty = mouthY - 1;
+                    if (isInBounds(Math.round(tx), Math.round(ty))) {
+                        drawTriangle(grid, Math.round(tx), Math.round(ty), 5, [240, 240, 230], true);
+                    }
+                    if (isInBounds(Math.round(tx), Math.round(ty + 2))) {
+                        drawTriangle(grid, Math.round(tx), Math.round(ty + 3), 5, [240, 240, 230], false);
+                    }
+                }
+                
+                // Claws/tentacles
+                for (let t = 0; t < 6; t++) {
+                    let tx = cx + (seededRandom(s++) - 0.5) * bodySize * 1.5;
+                    let ty = cy + bodySize + seededRandom(s++) * 15;
+                    const segments = 10 + Math.floor(seededRandom(s++) * 10);
+                    
+                    for (let i = 0; i < segments; i++) {
+                        tx += (seededRandom(s++) - 0.5) * 4;
+                        ty += seededRandom(s++) * 3;
+                        if (isInBounds(Math.round(tx), Math.round(ty))) {
+                            drawCircle(grid, Math.round(tx), Math.round(ty), 2, palette.secondary);
+                        }
+                    }
+                    // Claw tip
+                    if (isInBounds(Math.round(tx), Math.round(ty))) {
+                        drawCircle(grid, Math.round(tx), Math.round(ty), 2, palette.accent);
+                    }
+                }
+                
+                addNoise(grid, s, 10);
+            }
+
+            function generateFantasyScene(grid, seed, palette) {
+                let s = seed;
+                // Sky gradient
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const t = y / GRID_SIZE;
+                        grid[y][x] = lerpColor([20, 15, 60], [60, 30, 100], t);
+                    }
+                }
+                
+                // Stars
+                for (let i = 0; i < 60; i++) {
+                    const sx = Math.floor(seededRandom(s++) * GRID_SIZE);
+                    const sy = Math.floor(seededRandom(s++) * GRID_SIZE * 0.5);
+                    if (isInBounds(sx, sy)) {
+                        grid[sy][sx] = palette.highlight;
+                        // Twinkle
+                        if (seededRandom(s++) > 0.7 && isInBounds(sx + 1, sy)) grid[sy][sx + 1] = palette.highlight;
+                        if (seededRandom(s++) > 0.7 && isInBounds(sx, sy + 1)) grid[sy + 1][sx] = palette.highlight;
+                    }
+                }
+                
+                // Moon
+                drawCircle(grid, GRID_SIZE - 20, 20, 14, palette.highlight);
+                drawCircle(grid, GRID_SIZE - 16, 18, 12, palette.bg); // Crescent effect
+                
+                // Mountains
+                for (let m = 0; m < 4; m++) {
+                    const mx = 15 + m * 22;
+                    const mh = 35 + seededRandom(s++) * 30;
+                    const mw = 20 + seededRandom(s++) * 15;
+                    
+                    for (let y = GRID_SIZE - mh; y < GRID_SIZE; y++) {
+                        const progress = (y - (GRID_SIZE - mh)) / mh;
+                        const halfW = mw * (1 - progress) * 0.7;
+                        const startX = Math.max(0, Math.floor(mx - halfW));
+                        const endX = Math.min(GRID_SIZE - 1, Math.ceil(mx + halfW));
+                        const shade = lerpColor([50, 40, 70], [30, 25, 40], progress);
+                        
+                        for (let x = startX; x <= endX; x++) {
+                            grid[y][x] = shade;
+                        }
+                    }
+                }
+                
+                // Castle
+                const castleX = GRID_SIZE / 2;
+                const castleBase = GRID_SIZE - 25;
+                const castleH = 45;
+                
+                // Main walls
+                drawRect(grid, castleX - 14, castleBase - castleH, castleX + 14, castleBase, [100, 90, 110]);
+                
+                // Towers
+                for (let t = 0; t < 3; t++) {
+                    const tx = castleX - 10 + t * 10;
+                    drawRect(grid, tx - 3, castleBase - castleH - 12, tx + 3, castleBase, [110, 100, 120]);
+                    // Crenellations
+                    for (let c = 0; c < 3; c++) {
+                        drawRect(grid, tx - 2 + c * 2, castleBase - castleH - 15, tx - 1 + c * 2, castleBase - castleH - 12, [110, 100, 120]);
+                    }
+                    // Tower roof
+                    drawTriangle(grid, tx, castleBase - castleH - 12, 8, [160, 40, 40], true);
+                }
+                
+                // Windows
+                for (let w = 0; w < 4; w++) {
+                    const wx = castleX - 8 + w * 6;
+                    const wy = castleBase - castleH + 10 + w * 8;
+                    drawCircle(grid, wx, wy, 2, palette.highlight);
+                }
+                
+                // Gate
+                drawRect(grid, castleX - 4, castleBase - 15, castleX + 4, castleBase, [40, 30, 20]);
+                
+                // Dragon silhouette in sky
+                const dx = 30;
+                const dy = 25;
+                drawEllipse(grid, dx, dy, 12, 6, [60, 20, 20]);
+                drawTriangle(grid, dx + 10, dy, 8, [60, 20, 20], false);
+                
+                addNoise(grid, s, 8);
+            }
+
+            function generateNatureScene(grid, seed, palette) {
+                let s = seed;
+                // Sky
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const t = y / GRID_SIZE;
+                        grid[y][x] = lerpColor(palette.bg, [255, 180, 100], Math.min(1, t * 1.5));
+                    }
+                }
+                
+                // Sun
+                const sunX = GRID_SIZE - 25;
+                const sunY = 18;
+                drawCircle(grid, sunX, sunY, 13, palette.accent);
+                // Sun rays
+                for (let r = 0; r < 16; r++) {
+                    const angle = (r / 16) * Math.PI * 2;
+                    const rx = sunX + Math.cos(angle) * 16;
+                    const ry = sunY + Math.sin(angle) * 16;
+                    drawLine(grid, sunX, sunY, Math.round(rx), Math.round(ry), palette.accent, 1);
+                }
+                
+                // Ground
+                const groundY = GRID_SIZE - 28;
+                for (let y = groundY; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const shade = seededRandom(s++) * 15;
+                        grid[y][x] = [
+                            Math.min(255, palette.primary[0] + shade),
+                            Math.min(255, palette.primary[1] + shade),
+                            Math.min(255, palette.primary[2] + shade)
+                        ];
+                    }
+                }
+                
+                // Hills
+                for (let h = 0; h < 5; h++) {
+                    const hx = h * 24;
+                    const hh = 15 + seededRandom(s++) * 20;
+                    for (let y = groundY - hh; y < groundY; y++) {
+                        const progress = (y - (groundY - hh)) / hh;
+                        const halfW = 30 * (1 - progress);
+                        const startX = Math.max(0, Math.floor(hx - halfW));
+                        const endX = Math.min(GRID_SIZE - 1, Math.ceil(hx + halfW));
+                        for (let x = startX; x <= endX; x++) {
+                            const hillColor = lerpColor(palette.primary, palette.secondary, progress);
+                            grid[y][x] = hillColor;
+                        }
+                    }
+                }
+                
+                // Trees
+                for (let t = 0; t < 7; t++) {
+                    const tx = 8 + t * 13 + Math.floor(seededRandom(s++) * 8);
+                    const treeH = 25 + seededRandom(s++) * 20;
+                    
+                    // Trunk
+                    drawRect(grid, tx - 1, groundY - treeH, tx + 1, groundY, palette.shadow);
+                    
+                    // Foliage (multiple circles for natural look)
+                    for (let l = 0; l < 4; l++) {
+                        const lx = tx + Math.floor((seededRandom(s++) - 0.5) * 8);
+                        const ly = groundY - treeH - l * 4 + Math.floor(seededRandom(s++) * 6);
+                        const lr = 5 + seededRandom(s++) * 6;
+                        drawCircle(grid, lx, ly, Math.round(lr), l % 2 === 0 ? palette.primary : palette.secondary);
+                    }
+                }
+                
+                // Flowers
+                for (let f = 0; f < 20; f++) {
+                    const fx = Math.floor(seededRandom(s++) * GRID_SIZE);
+                    const fy = groundY + 2 + Math.floor(seededRandom(s++) * 8);
+                    if (isInBounds(fx, fy)) {
+                        const flowerColor = seededRandom(s++) > 0.5 ? [255, 100, 150] : [255, 220
