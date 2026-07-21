@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelMind - Generador de Arte IA</title>
+    <title>PixelMind - AI Art Generator</title>
     <style>
         * {
             margin: 0;
@@ -306,44 +306,44 @@
     <div class="container">
         <div class="header">
             <div class="logo">PixelMind</div>
-            <p class="tagline">Describe cualquier idea • La IA generará tu imagen pixel art</p>
+            <p class="tagline">Describe any idea • AI creates your pixel art image</p>
         </div>
 
         <div class="card">
             <div class="input-group">
-                <input type="text" id="themeInput" placeholder="Ej: Dragón de fuego en un castillo nocturno..." maxlength="150" autocomplete="off">
-                <button class="btn" id="generateBtn">✨ Generar</button>
+                <input type="text" id="themeInput" placeholder="e.g., Fire dragon in a night castle..." maxlength="150" autocomplete="off">
+                <button class="btn" id="generateBtn">✨ Generate</button>
             </div>
 
             <div class="controls-row">
                 <select id="styleSelect" class="select-style">
-                    <option value="pixel_retro">🎮 Pixel Art 8-bit Retro</option>
-                    <option value="pixel_16bit">🕹️ Pixel Art 16-bit Detallado</option>
+                    <option value="pixel_retro">🎮 8-bit Retro Pixel Art</option>
+                    <option value="pixel_16bit">🕹️ Detailed 16-bit Pixel Art</option>
                     <option value="cyberpunk">🌆 Cyberpunk Pixel</option>
-                    <option value="fantasy">🔮 Fantasía Épica Pixel</option>
+                    <option value="fantasy">🔮 Epic Fantasy Pixel</option>
                     <option value="anime">🍙 Anime Pixel Art</option>
                 </select>
                 <select id="sizeSelect" class="select-style">
-                    <option value="128">Pixelado Fino (128px)</option>
-                    <option value="64" selected>Pixelado Clásico (64px)</option>
-                    <option value="32">Pixelado Retro (32px)</option>
+                    <option value="128">Fine Pixels (128px)</option>
+                    <option value="64" selected>Classic Pixels (64px)</option>
+                    <option value="32">Retro Pixels (32px)</option>
                 </select>
             </div>
 
             <div class="chips">
-                <span class="chip" data-theme="Monstruo aterrador de las sombras">👹 Monstruo</span>
-                <span class="chip" data-theme="Atardecer entre montañas nevadas">🌅 Atardecer</span>
-                <span class="chip" data-theme="Ciudad cyberpunk con luces neón">🤖 Cyberpunk</span>
-                <span class="chip" data-theme="Pirámide egipcia bajo las estrellas">🏛️ Pirámide</span>
-                <span class="chip" data-theme="Gato tierno con sombrero de mago">🐱 Gato Mago</span>
-                <span class="chip" data-theme="Dragón escupiendo fuego azul">🐉 Dragón</span>
+                <span class="chip" data-theme="Scary shadow monster">👹 Monster</span>
+                <span class="chip" data-theme="Sunset over snowy mountains">🌅 Sunset</span>
+                <span class="chip" data-theme="Cyberpunk city with neon lights">🤖 Cyberpunk</span>
+                <span class="chip" data-theme="Egyptian pyramid under the stars">🏛️ Pyramid</span>
+                <span class="chip" data-theme="Cute cat with a wizard hat">🐱 Wizard Cat</span>
+                <span class="chip" data-theme="Dragon breathing blue fire">🐉 Dragon</span>
             </div>
             <div class="error-msg" id="errorMsg"></div>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <span>Creando imagen con IA... Esto puede tardar unos segundos.</span>
+            <span>Creating image with AI... This may take a few seconds.</span>
         </div>
 
         <div class="result-card" id="resultCard">
@@ -352,12 +352,12 @@
             </div>
             <div class="info">
                 <div class="info-text">
-                    <h3 id="artTitle">Tu creación</h3>
-                    <span id="artSubtitle">Renderizado en alta resolución</span>
+                    <h3 id="artTitle">Your Creation</h3>
+                    <span id="artSubtitle">High resolution render</span>
                 </div>
                 <div class="actions">
-                    <span class="badge">IA Generativa</span>
-                    <button class="btn btn-secondary" id="downloadBtn">⬇️ Descargar</button>
+                    <span class="badge">Generative AI</span>
+                    <button class="btn btn-secondary" id="downloadBtn">⬇️ Download</button>
                 </div>
             </div>
         </div>
@@ -397,7 +397,7 @@
 
         function generateAIImage(userPrompt) {
             if (!userPrompt.trim()) {
-                showError('Por favor ingresa una descripción para la imagen.');
+                showError('Please enter a description for the image.');
                 return;
             }
 
@@ -422,7 +422,7 @@
                 renderPixelatedImage(img, pixelResolution);
 
                 artTitle.textContent = userPrompt;
-                artSubtitle.textContent = `Pixel Grid: ${pixelResolution}×${pixelResolution} • IA Pollinations`;
+                artSubtitle.textContent = `Pixel Grid: ${pixelResolution}×${pixelResolution} • Pollinations AI`;
                 
                 loading.classList.remove('show');
                 resultCard.classList.add('show');
@@ -432,14 +432,14 @@
             img.onerror = () => {
                 loading.classList.remove('show');
                 generateBtn.disabled = false;
-                showError('Hubo un problema generando la imagen. Por favor intenta de nuevo.');
+                showError('There was a problem generating the image. Please try again.');
             };
 
             img.src = imageUrl;
         }
 
         function renderPixelatedImage(img, pixelGridSize) {
-            // Dibuja en un canvas temporal pequeño para forzar el entramado de píxeles
+            // Draw onto a small offscreen canvas to force pixelated downsampling
             const offscreenCanvas = document.createElement('canvas');
             offscreenCanvas.width = pixelGridSize;
             offscreenCanvas.height = pixelGridSize;
@@ -447,7 +447,7 @@
 
             offscreenCtx.drawImage(img, 0, 0, pixelGridSize, pixelGridSize);
 
-            // Re-escala de vuelta al canvas principal desactivando la suavización para mantener bordes limpios
+            // Scale back up to main canvas disabling smoothing for sharp pixel edges
             ctx.imageSmoothingEnabled = false;
             ctx.mozImageSmoothingEnabled = false;
             ctx.webkitImageSmoothingEnabled = false;
@@ -457,7 +457,7 @@
             ctx.drawImage(offscreenCanvas, 0, 0, pixelGridSize, pixelGridSize, 0, 0, canvas.width, canvas.height);
         }
 
-        // Descargar la imagen del canvas
+        // Download canvas image
         downloadBtn.addEventListener('click', () => {
             const link = document.createElement('a');
             const cleanTitle = artTitle.textContent.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -480,9 +480,9 @@
             });
         });
 
-        // Generar una imagen inicial al cargar
+        // Generate initial image on load
         window.addEventListener('DOMContentLoaded', () => {
-            themeInput.value = "Monstruo aterrador de las sombras";
+            themeInput.value = "Scary shadow monster";
             generateAIImage(themeInput.value);
         });
     </script>
