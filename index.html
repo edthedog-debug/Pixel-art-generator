@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pixel Art Museum Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            font-family: 'Georgia', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #e0d5c1;
+        }
+
+        .museum-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px double #c9a96e;
+            padding-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .museum-header h1 {
+            font-size: 3em;
+            color: #c9a96e;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-style: italic;
+            color: #a68a64;
+            font-size: 1.2em;
+        }
+
+        .controls {
+            background: rgba(20, 20, 40, 0.8);
+            border: 2px solid #c9a96e;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .category-btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+            border: 2px solid #4a4a6a;
+            border-radius: 10px;
+            color: #e0d5c1;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .category-btn:hover {
+            background: linear-gradient(135deg, #3a3a5a, #2a2a4a);
+            border-color: #c9a96e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(201, 169, 110, 0.3);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #c9a96e, #8b6914);
+            border-color: #e0c080;
+            color: #1a1a2e;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(201, 169, 110, 0.5);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #c9a96e, #8b6914);
+            border: none;
+            border-radius: 10px;
+            color: #1a1a2e;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .generate-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(201, 169, 110, 0.4);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: rgba(20, 20, 40, 0.9);
+            border: 5px solid #c9a96e;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+
+        .frame {
+            border: 20px solid #8b6914;
+            border-image: linear-gradient(135deg, #c9a96e, #6b4914) 1;
+            padding: 5px;
+            background: #1a1a2e;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: #000;
+        }
+
+        .artwork-info {
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+            color: #a68a64;
+        }
+
+        .museum-plaque {
+            background: #c9a96e;
+            color: #1a1a2e;
+            padding: 15px 25px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .plaque-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .plaque-artist {
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .gallery-item {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .gallery-item canvas {
+            width: 100%;
+            border: 3px solid #c9a96e;
+        }
+
+        @media (max-width: 600px) {
+            .museum-header h1 {
+                font-size: 2em;
+            }
+            
+            .categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            canvas {
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="museum-header">
+        <h1>🎨 AI Pixel Museum</h1>
+        <p class="subtitle">Where Digital Dreams Meet Retro Aesthetics</p>
+    </div>
+
+    <div class="controls">
+        <div class="categories" id="categories">
+            <button class="category-btn active" data-category="fear">👹 Fear</button>
+            <button class="category-btn" data-category="fantasy">🧙 Fantasy</button>
+            <button class="category-btn" data-category="nature">🌿 Nature</button>
+            <button class="category-btn" data-category="scifi">🚀 Sci-Fi</button>
+            <button class="category-btn" data-category="abstract">🎨 Abstract</button>
+            <button class="category-btn" data-category="ancient">🏛️ Ancient</button>
+            <button class="category-btn" data-category="cyberpunk">🤖 Cyberpunk</button>
+            <button class="category-btn" data-category="surreal">🌀 Surreal</button>
+        </div>
+        <button class="generate-btn" id="generateBtn">Generate Masterpiece</button>
+    </div>
+
+    <div class="canvas-container">
+        <div class="frame">
+            <canvas id="pixelCanvas"></canvas>
+        </div>
+        <div class="museum-plaque" id="plaque">
+            <div class="plaque-title" id="plaqueTitle">The Watcher in the Dark</div>
+            <div class="plaque-artist">AI Pixel Artist, 2024</div>
+            <div style="margin-top: 8px; font-size: 0.9em;">Digital Pixel Art • Museum Collection</div>
+        </div>
+    </div>
+
+    <div class="artwork-info">
+        <p>Click on any artwork to add it to your collection below</p>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+        class AIPixelArtGenerator {
+            constructor() {
+                this.canvas = document.getElementById('pixelCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.size = 64; // 64x64 pixels for high detail
+                this.pixelSize = 8;
+                this.canvas.width = this.size * this.pixelSize;
+                this.canvas.height = this.size * this.pixelSize;
+                this.currentCategory = 'fear';
+                this.gallery = [];
+                
+                this.init();
+            }
+
+            init() {
+                document.getElementById('generateBtn').addEventListener('click', () => this.generate());
+                
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentCategory = e.target.dataset.category;
+                        this.generate();
+                    });
+                });
+
+                // Initial generation
+                this.generate();
+            }
+
+            generate() {
+                const pixelData = this.createAIPixelArt();
+                this.renderPixelArt(pixelData);
+                this.updatePlaque();
+                
+                // Add to gallery
+                if (this.gallery.length < 12) {
+                    this.addToGallery(pixelData);
+                }
+            }
+
+            createAIPixelArt() {
+                const pixels = new Array(this.size).fill(null).map(() => 
+                    new Array(this.size).fill(null).map(() => [0, 0, 0])
+                );
+
+                const seed = Math.random() * 1000000;
+                
+                switch(this.currentCategory) {
+                    case 'fear':
+                        this.generateMonster(pixels, seed);
+                        break;
+                    case 'fantasy':
+                        this.generateFantasyScene(pixels, seed);
+                        break;
+                    case 'nature':
+                        this.generateNatureScene(pixels, seed);
+                        break;
+                    case 'scifi':
+                        this.generateSciFiScene(pixels, seed);
+                        break;
+                    case 'abstract':
+                        this.generateAbstractArt(pixels, seed);
+                        break;
+                    case 'ancient':
+                        this.generateAncientScene(pixels, seed);
+                        break;
+                    case 'cyberpunk':
+                        this.generateCyberpunkScene(pixels, seed);
+                        break;
+                    case 'surreal':
+                        this.generateSurrealScene(pixels, seed);
+                        break;
+                }
+
+                return pixels;
+            }
+
+            generateMonster(pixels, seed) {
+                const centerX = Math.floor(this.size / 2);
+                const centerY = Math.floor(this.size / 2);
+                
+                // Create a monster with eyes, mouth, and scary features
+                const monsterType = Math.floor(this.seededRandom(seed, 1) * 3);
+                
+                // Base shadow/darkness
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+                        const noise = this.seededRandom(seed + x * 100 + y, 2) * 30;
+                        
+                        if (dist < 25) {
+                            const shade = Math.max(0, 40 - dist + noise);
+                            pixels[y][x] = [shade, shade * 0.3, shade * 0.5];
+                        }
+                    }
+                }
+
+                // Eyes
+                const eyeY = centerY - 8;
+                const eyeSpacing = 6 + Math.floor(this.seededRandom(seed, 3) * 4);
+                
+                for (let i = -1; i <= 1; i += 2) {
+                    const eyeX = centerX + i * eyeSpacing;
+                    
+                    // Eye whites
+                    for (let y = eyeY - 4; y <= eyeY + 4; y++) {
+                        for (let x = eyeX - 3; x <= eyeX + 3; x++) {
+                            if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                                const eyeDist = Math.sqrt((x - eyeX) ** 2 + (y - eyeY) ** 2);
+                                if (eyeDist <= 4) {
+                                    pixels[y][x] = [220, 220, 100]; // Yellowish eyes
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Pupils
+                    for (let y = eyeY - 2; y <= eyeY + 2; y++) {
+                        for (let x = eyeX - 1; x <= eyeX + 1; x++) {
+                            if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                                pixels[y][x] = [200, 0, 0]; // Red pupils
+                            }
+                        }
+                    }
+                }
+
+                // Mouth
+                const mouthY = centerY + 6;
+                for (let y = mouthY - 2; y <= mouthY + 3; y++) {
+                    for (let x = centerX - 7; x <= centerX + 7; x++) {
+                        if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                            const mouthShape = Math.abs(x - centerX) < (8 - Math.abs(y - mouthY));
+                            if (mouthShape) {
+                                pixels[y][x] = [180, 0, 0]; // Blood red mouth
+                            }
+                        }
+                    }
+                }
+
+                // Sharp teeth
+                for (let x = centerX - 6; x <= centerX + 6; x += 2) {
+                    const toothY = mouthY + 1;
+                    if (toothY < this.size && x >= 0 && x < this.size) {
+                        pixels[toothY][x] = [255, 255, 255];
+                        if (toothY + 1 < this.size) pixels[toothY + 1][x] = [255, 255, 255];
+                    }
+                }
+
+                // Add tentacles or horns
+                if (monsterType === 0) {
+                    this.addTentacles(pixels, centerX, centerY, seed);
+                } else if (monsterType === 1) {
+                    this.addHorns(pixels, centerX, centerY, seed);
+                } else {
+                    this.addSpikes(pixels, centerX, centerY, seed);
+                }
+            }
+
+            addTentacles(pixels, cx, cy, seed) {
+                for (let t = 0; t < 4; t++) {
+                    let x = cx + Math.cos(t * Math.PI / 2) * 15;
+                    let y = cy + Math.sin(t * Math.PI / 2) * 15;
+                    
+                    for (let i = 0; i < 15; i++) {
+                        x += Math.cos(this.seededRandom(seed + t * 10 + i, 7) * Math.PI * 2) * 2;
+                        y += Math.sin(this.seededRandom(seed + t * 10 + i, 8) * Math.PI) * 1.5;
+                        
+                        const px = Math.floor(x);
+                        const py = Math.floor(y);
+                        
+                        if (px >= 0 && px < this.size && py >= 0 && py < this.size) {
+                            pixels[py][px] = [60, 30, 60];
+                            // Add suction cups
+                            if (i % 3 === 0) {
+                                for (let dx = -1; dx <= 1; dx++) {
+                                    for (let dy = -1; dy <= 1; dy++) {
+                                        if (py + dy >= 0 && py + dy < this.size && px + dx >= 0 && px + dx < this.size) {
+                                            pixels[py + dy][px + dx] = [100, 50, 100];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            addHorns(pixels, cx, cy, seed) {
+                for (let h = 0; h < 2; h++) {
+                    let x = cx + (h === 0 ? -10 : 10);
+                    let y = cy - 20;
+                    
+                    for (let i = 0; i < 20; i++) {
+                        x += (h === 0 ? -0.5 : 0.5);
+                        y -= 0.8;
+                        
+                        for (let dx = -2; dx <= 2; dx++) {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                const px = Math.floor(x + dx);
+                                const py = Math.floor(y + dy);
+                                if (px >= 0 && px < this.size && py >= 0 && py < this.size) {
+                                    const dist = Math.abs(dx) + Math.abs(dy);
+                                    if (dist <= 2) {
+                                        pixels[py][px] = [80, 40, 20];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            addSpikes(pixels, cx, cy, seed) {
+                for (let s = 0; s < 8; s++) {
+                    const angle = (s / 8) * Math.PI * 2;
+                    let x = cx + Math.cos(angle) * 18;
+                    let y = cy + Math.sin(angle) * 18;
+                    
+                    for (let i = 0; i < 8; i++) {
+                        x += Math.cos(angle) * 1.5;
+                        y += Math.sin(angle) * 1.5;
+                        
+                        const px = Math.floor(x);
+                        const py = Math.floor(y);
+                        
+                        if (px >= 0 && px < this.size && py >= 0 && py < this.size) {
+                            pixels[py][px] = [100, 100, 100];
+                            // Add highlight
+                            if (px + 1 < this.size) pixels[py][px + 1] = [150, 150, 150];
+                        }
+                    }
+                }
+            }
+
+            generateFantasyScene(pixels, seed) {
+                // Create a fantasy castle or dragon
+                const type = Math.floor(this.seededRandom(seed, 10) * 2);
+                
+                if (type === 0) {
+                    this.generateCastle(pixels, seed);
+                } else {
+                    this.generateDragon(pixels, seed);
+                }
+            }
+
+            generateCastle(pixels, seed) {
+                // Sky gradient
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const gradient = (y / this.size);
+                        pixels[y][x] = [
+                            Math.floor(20 + gradient * 30),
+                            Math.floor(20 + gradient * 40),
+                            Math.floor(60 + gradient * 60)
+                        ];
+                    }
+                }
+                
+                // Castle walls
+                const wallHeight = 35;
+                for (let y = this.size - wallHeight; y < this.size; y++) {
+                    for (let x = 15; x < 50; x++) {
+                        pixels[y][x] = [120, 110, 100];
+                        // Add stone texture
+                        if ((x + y) % 4 === 0) {
+                            pixels[y][x] = [100, 90, 80];
+                        }
+                    }
+                }
+                
+                // Towers
+                for (let t = 0; t < 3; t++) {
+                    const towerX = 18 + t * 14;
+                    for (let y = this.size - 50; y < this.size; y++) {
+                        for (let x = towerX - 3; x <= towerX + 3; x++) {
+                            if (x >= 0 && x < this.size) {
+                                pixels[y][x] = [130, 120, 110];
+                                // Crenellations
+                                if (y < this.size - 45 && (y % 4 < 2)) {
+                                    pixels[y][x] = [130, 120, 110];
+                                }
+                            }
+                        }
+                    }
+                    // Tower tops
+                    for (let y = this.size - 55; y < this.size - 48; y++) {
+                        for (let x = towerX - 2; x <= towerX + 2; x++) {
+                            if (x >= 0 && x < this.size && y >= 0) {
+                                pixels[y][x] = [180, 50, 50]; // Red roof
+                            }
+                        }
+                    }
+                }
+                
+                // Add stars
+                for (let i = 0; i < 20; i++) {
+                    const sx = Math.floor(this.seededRandom(seed + i * 3, 13) * this.size);
+                    const sy = Math.floor(this.seededRandom(seed + i * 5, 14) * (this.size - 45));
+                    if (sx < this.size && sy < this.size) {
+                        pixels[sy][sx] = [255, 255, 200];
+                    }
+                }
+            }
+
+            generateDragon(pixels, seed) {
+                // Similar to monster but with wings and fire
+                this.generateMonster(pixels, seed); // Base
+                
+                // Add wings
+                const centerX = Math.floor(this.size / 2);
+                const centerY = Math.floor(this.size / 2);
+                
+                for (let w = 0; w < 2; w++) {
+                    const side = w === 0 ? -1 : 1;
+                    let x = centerX + side * 15;
+                    let y = centerY - 10;
+                    
+                    for (let i = 0; i < 25; i++) {
+                        x += side * 1.5;
+                        y -= 0.5 + this.seededRandom(seed + w * 20 + i, 15) * 2;
+                        
+                        for (let dx = -2; dx <= 2; dx++) {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                const px = Math.floor(x + dx);
+                                const py = Math.floor(y + dy);
+                                if (px >= 0 && px < this.size && py >= 0 && py < this.size) {
+                                    const wingColor = 100 - Math.abs(dx) * 20;
+                                    pixels[py][px] = [wingColor, 20, 20];
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Add fire breath
+                for (let i = 0; i < 15; i++) {
+                    let fx = centerX + i * 1.5;
+                    let fy = centerY + 5 + Math.sin(i * 0.5) * 3;
+                    
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            const px = Math.floor(fx + dx);
+                            const py = Math.floor(fy + dy);
+                            if (px >= 0 && px < this.size && py >= 0 && py < this.size) {
+                                const fireColor = 255 - i * 10;
+                                pixels[py][px] = [fireColor, Math.floor(fireColor * 0.5), 0];
+                            }
+                        }
+                    }
+                }
+            }
+
+            generateNatureScene(pixels, seed) {
+                // Sky
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const skyGradient = y / this.size;
+                        pixels[y][x] = [
+                            Math.floor(135 + skyGradient * 30),
+                            Math.floor(206 + skyGradient * 20),
+                            Math.floor(235 - skyGradient * 50)
+                        ];
+                    }
+                }
+                
+                // Ground
+                for (let y = this.size - 20; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const groundShade = 34 + this.seededRandom(seed + x * 10 + y, 20) * 30;
+                        pixels[y][x] = [Math.floor(groundShade), Math.floor(groundShade * 2.5), Math.floor(groundShade * 0.5)];
+                    }
+                }
+                
+                // Trees
+                for (let t = 0; t < 5; t++) {
+                    const treeX = 10 + t * 12 + Math.floor(this.seededRandom(seed + t * 7, 21) * 6);
+                    const treeHeight = 20 + Math.floor(this.seededRandom(seed + t * 11, 22) * 15);
+                    
+                    // Trunk
+                    for (let y = this.size - 20 - treeHeight; y < this.size - 20; y++) {
+                        for (let x = treeX - 1; x <= treeX + 1; x++) {
+                            if (x >= 0 && x < this.size && y >= 0) {
+                                pixels[y][x] = [101, 67, 33];
+                            }
+                        }
+                    }
+                    
+                    // Leaves
+                    for (let dy = -8; dy <= 0; dy++) {
+                        for (let dx = -6; dx <= 6; dx++) {
+                            const px = treeX + dx;
+                            const py = this.size - 20 - treeHeight + dy;
+                            const leafDist = Math.abs(dx) + Math.abs(dy);
+                            if (leafDist <= 7 && px >= 0 && px < this.size && py >= 0 && py < this.size) {
+                                const greenShade = 20 + this.seededRandom(seed + px + py, 23) * 40;
+                                pixels[py][px] = [Math.floor(greenShade * 0.5), Math.floor(greenShade), Math.floor(greenShade * 0.5)];
+                            }
+                        }
+                    }
+                }
+            }
+
+            generateSciFiScene(pixels, seed) {
+                // Space background
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        pixels[y][x] = [5, 5, 20];
+                    }
+                }
+                
+                // Stars
+                for (let i = 0; i < 50; i++) {
+                    const sx = Math.floor(this.seededRandom(seed + i * 3, 30) * this.size);
+                    const sy = Math.floor(this.seededRandom(seed + i * 5, 31) * this.size);
+                    if (sx < this.size && sy < this.size) {
+                        pixels[sy][sx] = [255, 255, 255];
+                    }
+                }
+                
+                // Spaceship
+                const shipX = Math.floor(this.size / 2);
+                const shipY = Math.floor(this.size / 2);
+                
+                for (let y = shipY - 5; y <= shipY + 5; y++) {
+                    for (let x = shipX - 8; x <= shipX + 8; x++) {
+                        if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                            const shipShape = Math.abs(x - shipX) < (5 - Math.abs(y - shipY) * 0.5);
+                            if (shipShape) {
+                                pixels[y][x] = [150, 150, 160];
+                            }
+                        }
+                    }
+                }
+                
+                // Engine glow
+                for (let y = shipY - 3; y <= shipY + 3; y++) {
+                    for (let x = shipX + 5; x <= shipX + 10; x++) {
+                        if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                            pixels[y][x] = [0, 150, 255];
+                        }
+                    }
+                }
+            }
+
+            generateAbstractArt(pixels, seed) {
+                // Generate geometric abstract patterns
+                const patterns = Math.floor(this.seededRandom(seed, 40) * 5) + 3;
+                
+                for (let p = 0; p < patterns; p++) {
+                    const cx = Math.floor(this.seededRandom(seed + p * 10, 41) * this.size);
+                    const cy = Math.floor(this.seededRandom(seed + p * 15, 42) * this.size);
+                    const radius = 5 + Math.floor(this.seededRandom(seed + p * 20, 43) * 20);
+                    const color = [
+                        Math.floor(this.seededRandom(seed + p * 25, 44) * 255),
+                        Math.floor(this.seededRandom(seed + p * 30, 45) * 255),
+                        Math.floor(this.seededRandom(seed + p * 35, 46) * 255)
+                    ];
+                    
+                    for (let y = 0; y < this.size; y++) {
+                        for (let x = 0; x < this.size; x++) {
+                            const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                            if (dist < radius) {
+                                const blend = 1 - (dist / radius);
+                                pixels[y][x] = [
+                                    Math.floor(pixels[y][x][0] + color[0] * blend * 0.5),
+                                    Math.floor(pixels[y][x][1] + color[1] * blend * 0.5),
+                                    Math.floor(pixels[y][x][2] + color[2] * blend * 0.5)
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+
+            generateAncientScene(pixels, seed) {
+                // Desert/sand background
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const sandShade = 180 + this.seededRandom(seed + x + y * this.size, 50) * 40;
+                        pixels[y][x] = [Math.floor(sandShade), Math.floor(sandShade * 0.8), Math.floor(sandShade * 0.5)];
+                    }
+                }
+                
+                // Pyramid
+                const pyramidX = Math.floor(this.size / 2);
+                const pyramidHeight = 40;
+                
+                for (let y = this.size - pyramidHeight; y < this.size; y++) {
+                    const width = (this.size - y) * 1.2;
+                    for (let x = pyramidX - Math.floor(width / 2); x <= pyramidX + Math.floor(width / 2); x++) {
+                        if (x >= 0 && x < this.size) {
+                            const shade = 180 + (y - (this.size - pyramidHeight)) * 2;
+                            pixels[y][x] = [Math.floor(shade), Math.floor(shade * 0.75), Math.floor(shade * 0.4)];
+                        }
+                    }
+                }
+                
+                // Hieroglyphics
+                for (let i = 0; i < 10; i++) {
+                    const hx = pyramidX - 15 + i * 3;
+                    const hy = this.size - 15 + Math.floor(this.seededRandom(seed + i, 51) * 5);
+                    if (hx >= 0 && hx < this.size && hy >= 0 && hy < this.size) {
+                        pixels[hy][hx] = [80, 40, 20];
+                        pixels[hy - 1][hx] = [80, 40, 20];
+                    }
+                }
+            }
+
+            generateCyberpunkScene(pixels, seed) {
+                // Dark city background
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const cityShade = 20 + (1 - y / this.size) * 40;
+                        pixels[y][x] = [Math.floor(cityShade), Math.floor(cityShade * 0.5), Math.floor(cityShade)];
+                    }
+                }
+                
+                // Neon lights
+                for (let i = 0; i < 15; i++) {
+                    const nx = Math.floor(this.seededRandom(seed + i * 3, 60) * this.size);
+                    const ny = Math.floor(this.seededRandom(seed + i * 5, 61) * this.size);
+                    const color = [
+                        [255, 0, 255], // Magenta
+                        [0, 255, 255], // Cyan
+                        [255, 255, 0], // Yellow
+                    ][i % 3];
+                    
+                    for (let y = ny - 2; y <= ny + 2; y++) {
+                        for (let x = nx - 1; x <= nx + 1; x++) {
+                            if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                                pixels[y][x] = color;
+                            }
+                        }
+                    }
+                }
+                
+                // Buildings
+                for (let b = 0; b < 8; b++) {
+                    const bx = 5 + b * 8;
+                    const bHeight = 20 + Math.floor(this.seededRandom(seed + b * 7, 62) * 30);
+                    
+                    for (let y = this.size - bHeight; y < this.size; y++) {
+                        for (let x = bx; x < bx + 6; x++) {
+                            if (x < this.size) {
+                                pixels[y][x] = [30, 30, 40];
+                                // Windows
+                                if ((x - bx) % 3 === 1 && (this.size - y) % 4 === 1) {
+                                    pixels[y][x] = [255, 255, 100];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            generateSurrealScene(pixels, seed) {
+                // Melting clocks or impossible geometry
+                for (let y = 0; y < this.size; y++) {
+                    for (let x = 0; x < this.size; x++) {
+                        const surrealShade = 100 + Math.sin(x * 0.1) * 50 + Math.cos(y * 0.1) * 50;
+                        pixels[y][x] = [
+                            Math.floor(surrealShade),
+                            Math.floor(surrealShade * 0.7),
+                            Math.floor(surrealShade * 0.9)
+                        ];
+                    }
+                }
+                
+                // Melting clock
+                const clockX = Math.floor(this.size / 2);
+                const clockY = Math.floor(this.size / 2);
+                
+                for (let y = clockY - 10; y <= clockY + 10; y++) {
+                    for (let x = clockX - 10; x <= clockX + 10; x++) {
+                        if (y >= 0 && y < this.size && x >= 0 && x < this.size) {
+                            const dist = Math.sqrt((x - clockX) ** 2 + (y - clockY + Math.sin(x * 0.5) * 3) ** 2);
+                            if (dist < 10 && dist > 7) {
+                                pixels[y][x] = [200, 180, 120];
+                            }
+                        }
+                    }
+                }
+                
+                // Clock hands
+                for (let i = 0; i < 10; i++) {
+                    const hx = clockX + Math.floor(Math.cos(i * 0.5) * i * 0.5);
+                    const hy = clockY + Math.floor(Math.sin(i * 0.5) * i * 0.5) + Math.sin(hx * 0.5) * 3;
+                    if (hx >= 0 && hx < this.size && hy >= 0 && hy < this.size) {
+                        pixels[hy][hx] = [50, 50, 50];
+                    }
+                }
+            }
+
+            seededRandom(seed, index) {
+                const x = Math.sin(seed * 12.9898 + index * 78.233) * 43758.545
