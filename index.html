@@ -2,29 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelMind - AI Art Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- Title -->
+    <title>PIXEL ART GENERATOR</title>
+
+    <!-- SEO & Search Engine Optimization -->
+    <meta name="description" content="Free AI Pixel Art Generator. Instantly transform text descriptions into high-quality 8-bit, 16-bit, retro, anime, and cyberpunk pixel art with artificial intelligence.">
+    <meta name="keywords" content="pixel art generator, ai pixel art, 8bit art generator, 16bit retro art, pixel mind, ai image generator, retro game sprites, free pixel art creator">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="PixelMind AI">
+    <link rel="canonical" href="https://pixelartgenerator.com/">
+
+    <!-- Open Graph / Social Media (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PIXEL ART GENERATOR - Free AI Pixel Art Creator">
+    <meta property="og:description" content="Generate stunning 8-bit, 16-bit, and cyberpunk pixel art instantly with AI. Describe anything and let AI draw it.">
+    <meta property="og:site_name" content="PIXEL ART GENERATOR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PIXEL ART GENERATOR - AI Pixel Art Creator">
+    <meta name="twitter:description" content="Turn any prompt into retro pixel art instantly using advanced generative AI.">
+
+    <!-- iOS & Mobile Optimization -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pixel Art AI">
+    <meta name="theme-color" content="#000000">
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: #0a0a0f;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(94, 92, 230, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(191, 90, 242, 0.12) 0px, transparent 50%);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #e8e8f0;
-            padding: 20px;
+            color: #f2f2f7;
+            padding: 24px 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
             width: 100%;
-            max-width: 680px;
+            max-width: 620px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -32,60 +65,66 @@
 
         .header {
             text-align: center;
-            padding: 20px 20px 10px;
+            padding: 24px 12px 8px;
         }
 
         .logo {
-            font-size: 2.8em;
+            font-size: 2.4em;
             font-weight: 800;
-            background: linear-gradient(135deg, #6c5ce7, #a855f7, #ec4899);
+            letter-spacing: -0.8px;
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.75) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: -0.5px;
         }
 
         .tagline {
-            color: #9898b0;
+            color: #8e8e93;
             font-size: 0.95em;
+            font-weight: 400;
             margin-top: 6px;
+            letter-spacing: -0.2px;
         }
 
+        /* iOS Glassmorphism Card Style */
         .card {
-            background: #1a1a2e;
-            border: 1px solid #2a2a40;
-            border-radius: 20px;
+            background: rgba(28, 28, 30, 0.72);
+            -webkit-backdrop-filter: blur(30px);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         .input-group {
             display: flex;
             gap: 10px;
-            background: #222240;
-            border-radius: 12px;
-            padding: 6px;
-            border: 1px solid transparent;
-            transition: border-color 0.2s;
+            background: rgba(120, 120, 128, 0.18);
+            border-radius: 18px;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
         }
 
         .input-group:focus-within {
-            border-color: #6c5ce7;
+            border-color: #0a84ff;
+            background: rgba(120, 120, 128, 0.24);
         }
 
         #themeInput {
             flex: 1;
             background: transparent;
             border: none;
-            padding: 14px 16px;
-            color: #e8e8f0;
+            padding: 12px 16px;
+            color: #ffffff;
             font-size: 1.05em;
             font-family: inherit;
             outline: none;
         }
 
         #themeInput::placeholder {
-            color: #5a5a7a;
+            color: #8e8e93;
         }
 
         .controls-row {
@@ -95,29 +134,37 @@
         }
 
         .select-style {
-            background: #222240;
-            border: 1px solid #2a2a40;
-            color: #e8e8f0;
-            padding: 10px 14px;
-            border-radius: 10px;
+            background: rgba(120, 120, 128, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #f2f2f7;
+            padding: 12px 14px;
+            border-radius: 14px;
             font-size: 0.9em;
+            font-family: inherit;
             outline: none;
             cursor: pointer;
             flex: 1;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 36px;
         }
 
         .btn {
-            background: linear-gradient(135deg, #6c5ce7, #a855f7);
+            background: #0a84ff;
             border: none;
             color: white;
-            padding: 14px 24px;
-            border-radius: 10px;
+            padding: 12px 22px;
+            border-radius: 14px;
             font-weight: 600;
             font-size: 0.95em;
             cursor: pointer;
             font-family: inherit;
             white-space: nowrap;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -125,80 +172,86 @@
         }
 
         .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+            background: #0071e3;
         }
 
         .btn:active {
-            transform: scale(0.97);
+            transform: scale(0.96);
+            opacity: 0.9;
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
 
         .btn-secondary {
-            background: #222240;
-            border: 1px solid #3a3a58;
-            color: #e8e8f0;
+            background: rgba(120, 120, 128, 0.24);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #0a84ff;
         }
 
         .btn-secondary:hover {
-            background: #2a2a50;
-            box-shadow: none;
+            background: rgba(120, 120, 128, 0.35);
         }
 
         .chips {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 14px;
+            margin-top: 16px;
         }
 
         .chip {
-            background: #222240;
-            border: 1px solid #2a2a40;
-            padding: 8px 14px;
-            border-radius: 20px;
+            background: rgba(120, 120, 128, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 999px;
             font-size: 0.85em;
-            color: #9898b0;
+            color: #8e8e93;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .chip:hover {
-            background: #6c5ce7;
-            border-color: #6c5ce7;
-            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .chip:active {
+            transform: scale(0.95);
         }
 
         .result-card {
-            background: #1a1a2e;
-            border: 1px solid #2a2a40;
-            border-radius: 20px;
+            background: rgba(28, 28, 30, 0.72);
+            -webkit-backdrop-filter: blur(30px);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
             overflow: hidden;
             display: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         .result-card.show {
             display: block;
-            animation: fadeIn 0.4s ease;
+            animation: iosFadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes iosFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .canvas-container {
-            background: #0d0d1a;
-            padding: 20px;
+            background: #000000;
+            padding: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-bottom: 1px solid #2a2a40;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
             min-height: 320px;
         }
@@ -207,14 +260,14 @@
             display: block;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
             max-width: 100%;
             height: auto;
         }
 
         .info {
-            padding: 16px 20px;
+            padding: 18px 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -223,13 +276,13 @@
         }
 
         .info-text h3 {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 1.1em;
-            text-transform: capitalize;
+            letter-spacing: -0.3px;
         }
 
         .info-text span {
-            color: #9898b0;
+            color: #8e8e93;
             font-size: 0.85em;
         }
 
@@ -240,20 +293,21 @@
         }
 
         .badge {
-            background: #222240;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            color: #a855f7;
+            background: rgba(94, 92, 230, 0.2);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.78em;
+            color: #5e5ce6;
             font-weight: 600;
-            border: 1px solid rgba(168, 85, 247, 0.3);
+            border: 1px solid rgba(94, 92, 230, 0.3);
         }
 
         .loading {
             display: none;
             text-align: center;
             padding: 30px;
-            color: #9898b0;
+            color: #8e8e93;
+            font-size: 0.95em;
         }
 
         .loading.show {
@@ -261,19 +315,19 @@
         }
 
         .spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid rgba(108, 92, 231, 0.2);
-            border-top-color: #6c5ce7;
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0a84ff;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
+            animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+            margin: 0 auto 14px;
         }
 
         .error-msg {
-            color: #ff5555;
+            color: #ff453a;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 0.9em;
             display: none;
         }
@@ -287,10 +341,12 @@
                 flex-direction: column;
                 background: transparent;
                 padding: 0;
+                border: none;
             }
             #themeInput {
-                background: #222240;
-                border-radius: 12px;
+                background: rgba(120, 120, 128, 0.18);
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
             }
             .controls-row {
                 flex-direction: column;
@@ -305,7 +361,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">PixelMind</div>
+            <h1 class="logo">PIXEL ART GENERATOR</h1>
             <p class="tagline">Describe any idea • AI creates your pixel art image</p>
         </div>
 
