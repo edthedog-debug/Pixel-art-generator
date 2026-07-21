@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixelMind - AI Art Generator</title>
+    <title>PixelMind - Generador de Arte IA</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             background: #0a0a0f;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -24,7 +24,7 @@
 
         .container {
             width: 100%;
-            max-width: 650px;
+            max-width: 680px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -32,22 +32,23 @@
 
         .header {
             text-align: center;
-            padding: 30px 20px 10px;
+            padding: 20px 20px 10px;
         }
 
         .logo {
-            font-size: 2.5em;
+            font-size: 2.8em;
             font-weight: 800;
-            background: linear-gradient(135deg, #6c5ce7, #a855f7);
+            background: linear-gradient(135deg, #6c5ce7, #a855f7, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.5px;
         }
 
         .tagline {
             color: #9898b0;
             font-size: 0.95em;
-            margin-top: 5px;
+            margin-top: 6px;
         }
 
         .card {
@@ -55,6 +56,7 @@
             border: 1px solid #2a2a40;
             border-radius: 20px;
             padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .input-group {
@@ -86,6 +88,24 @@
             color: #5a5a7a;
         }
 
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .select-style {
+            background: #222240;
+            border: 1px solid #2a2a40;
+            color: #e8e8f0;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            outline: none;
+            cursor: pointer;
+            flex: 1;
+        }
+
         .btn {
             background: linear-gradient(135deg, #6c5ce7, #a855f7);
             border: none;
@@ -98,6 +118,10 @@
             font-family: inherit;
             white-space: nowrap;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn:hover {
@@ -107,6 +131,23 @@
 
         .btn:active {
             transform: scale(0.97);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #222240;
+            border: 1px solid #3a3a58;
+            color: #e8e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #2a2a50;
+            box-shadow: none;
         }
 
         .chips {
@@ -158,6 +199,8 @@
             justify-content: center;
             align-items: center;
             border-bottom: 1px solid #2a2a40;
+            position: relative;
+            min-height: 320px;
         }
 
         canvas {
@@ -165,7 +208,7 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
             max-width: 100%;
             height: auto;
         }
@@ -175,17 +218,25 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        .info h3 {
+        .info-text h3 {
             font-weight: 700;
             font-size: 1.1em;
             text-transform: capitalize;
         }
 
-        .info span {
+        .info-text span {
             color: #9898b0;
             font-size: 0.85em;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .badge {
@@ -195,12 +246,13 @@
             font-size: 0.8em;
             color: #a855f7;
             font-weight: 600;
+            border: 1px solid rgba(168, 85, 247, 0.3);
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
             color: #9898b0;
         }
 
@@ -209,13 +261,21 @@
         }
 
         .spinner {
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border: 3px solid rgba(108, 92, 231, 0.2);
             border-top-color: #6c5ce7;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 12px;
+        }
+
+        .error-msg {
+            color: #ff5555;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
         }
 
         @keyframes spin {
@@ -232,9 +292,12 @@
                 background: #222240;
                 border-radius: 12px;
             }
-            .btn {
-                width: 100%;
-                text-align: center;
+            .controls-row {
+                flex-direction: column;
+            }
+            .info {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -243,27 +306,44 @@
     <div class="container">
         <div class="header">
             <div class="logo">PixelMind</div>
-            <p class="tagline">Describe anything • AI creates unique pixel art</p>
+            <p class="tagline">Describe cualquier idea • La IA generará tu imagen pixel art</p>
         </div>
 
         <div class="card">
             <div class="input-group">
-                <input type="text" id="themeInput" placeholder="Describe your pixel art..." maxlength="120" autocomplete="off">
-                <button class="btn" id="generateBtn">✨ Generate</button>
+                <input type="text" id="themeInput" placeholder="Ej: Dragón de fuego en un castillo nocturno..." maxlength="150" autocomplete="off">
+                <button class="btn" id="generateBtn">✨ Generar</button>
             </div>
+
+            <div class="controls-row">
+                <select id="styleSelect" class="select-style">
+                    <option value="pixel_retro">🎮 Pixel Art 8-bit Retro</option>
+                    <option value="pixel_16bit">🕹️ Pixel Art 16-bit Detallado</option>
+                    <option value="cyberpunk">🌆 Cyberpunk Pixel</option>
+                    <option value="fantasy">🔮 Fantasía Épica Pixel</option>
+                    <option value="anime">🍙 Anime Pixel Art</option>
+                </select>
+                <select id="sizeSelect" class="select-style">
+                    <option value="128">Pixelado Fino (128px)</option>
+                    <option value="64" selected>Pixelado Clásico (64px)</option>
+                    <option value="32">Pixelado Retro (32px)</option>
+                </select>
+            </div>
+
             <div class="chips">
-                <span class="chip" data-theme="scary monster">👹 Monster</span>
-                <span class="chip" data-theme="sunset mountains">🌅 Sunset</span>
-                <span class="chip" data-theme="cyberpunk city">🤖 Cyberpunk</span>
-                <span class="chip" data-theme="egyptian pyramid">🏛️ Pyramid</span>
-                <span class="chip" data-theme="cute cat">🐱 Cat</span>
-                <span class="chip" data-theme="fire dragon">🐉 Dragon</span>
+                <span class="chip" data-theme="Monstruo aterrador de las sombras">👹 Monstruo</span>
+                <span class="chip" data-theme="Atardecer entre montañas nevadas">🌅 Atardecer</span>
+                <span class="chip" data-theme="Ciudad cyberpunk con luces neón">🤖 Cyberpunk</span>
+                <span class="chip" data-theme="Pirámide egipcia bajo las estrellas">🏛️ Pirámide</span>
+                <span class="chip" data-theme="Gato tierno con sombrero de mago">🐱 Gato Mago</span>
+                <span class="chip" data-theme="Dragón escupiendo fuego azul">🐉 Dragón</span>
             </div>
+            <div class="error-msg" id="errorMsg"></div>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            Creating pixel art...
+            <span>Creando imagen con IA... Esto puede tardar unos segundos.</span>
         </div>
 
         <div class="result-card" id="resultCard">
@@ -271,11 +351,14 @@
                 <canvas id="pixelCanvas"></canvas>
             </div>
             <div class="info">
-                <div>
-                    <h3 id="artTitle">Your creation</h3>
-                    <span>96×96 pixels • High detail</span>
+                <div class="info-text">
+                    <h3 id="artTitle">Tu creación</h3>
+                    <span id="artSubtitle">Renderizado en alta resolución</span>
                 </div>
-                <span class="badge">AI Generated</span>
+                <div class="actions">
+                    <span class="badge">IA Generativa</span>
+                    <button class="btn btn-secondary" id="downloadBtn">⬇️ Descargar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -284,331 +367,124 @@
         const canvas = document.getElementById('pixelCanvas');
         const ctx = canvas.getContext('2d');
         const themeInput = document.getElementById('themeInput');
+        const styleSelect = document.getElementById('styleSelect');
+        const sizeSelect = document.getElementById('sizeSelect');
         const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
         const resultCard = document.getElementById('resultCard');
         const loading = document.getElementById('loading');
         const artTitle = document.getElementById('artTitle');
+        const artSubtitle = document.getElementById('artSubtitle');
+        const errorMsg = document.getElementById('errorMsg');
         const chips = document.querySelectorAll('.chip');
 
-        const SIZE = 96;
-        const SCALE = 6;
-        canvas.width = SIZE * SCALE;
-        canvas.height = SIZE * SCALE;
+        const RENDER_CANVAS_SIZE = 512;
+        canvas.width = RENDER_CANVAS_SIZE;
+        canvas.height = RENDER_CANVAS_SIZE;
 
-        function hash(str) {
-            let h = 0;
-            for (let i = 0; i < str.length; i++) {
-                h = ((h << 5) - h) + str.charCodeAt(i);
-                h |= 0;
-            }
-            return Math.abs(h);
+        const STYLE_PROMPTS = {
+            pixel_retro: "8-bit pixel art style, sprite art, retro video game aesthetic, clean pixel lines, vibrant retro color palette",
+            pixel_16bit: "16-bit SNES style pixel art, detailed pixelated art, vibrant colors, game asset",
+            cyberpunk: "cyberpunk pixel art, neon colors, synthwave pixel aesthetic, dark glowing sci-fi atmosphere",
+            fantasy: "epic fantasy pixel art, detailed retro game artwork, magical lighting, crisp pixel art style",
+            anime: "Japanese anime pixel art style, cute vibrant pixel aesthetic, retro 90s anime video game style"
+        };
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = msg ? 'block' : 'none';
         }
 
-        function rand(seed) {
-            seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-            return (seed >>> 16) / 32767;
-        }
-
-        function createGrid() {
-            const grid = new Array(SIZE);
-            for (let y = 0; y < SIZE; y++) {
-                grid[y] = new Array(SIZE);
-                for (let x = 0; x < SIZE; x++) {
-                    grid[y][x] = [0, 0, 0];
-                }
-            }
-            return grid;
-        }
-
-        function inBounds(x, y) {
-            return x >= 0 && x < SIZE && y >= 0 && y < SIZE;
-        }
-
-        function circle(grid, cx, cy, r, color) {
-            for (let y = Math.max(0, Math.floor(cy - r)); y <= Math.min(SIZE - 1, Math.ceil(cy + r)); y++) {
-                for (let x = Math.max(0, Math.floor(cx - r)); x <= Math.min(SIZE - 1, Math.ceil(cx + r)); x++) {
-                    if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) {
-                        grid[y][x] = [...color];
-                    }
-                }
-            }
-        }
-
-        function rect(grid, x1, y1, x2, y2, color) {
-            const sx = Math.max(0, Math.min(x1, x2));
-            const ex = Math.min(SIZE - 1, Math.max(x1, x2));
-            const sy = Math.max(0, Math.min(y1, y2));
-            const ey = Math.min(SIZE - 1, Math.max(y1, y2));
-            for (let y = sy; y <= ey; y++) {
-                for (let x = sx; x <= ex; x++) {
-                    grid[y][x] = [...color];
-                }
-            }
-        }
-
-        function generate(theme) {
-            const grid = createGrid();
-            const seed = hash(theme);
-            let s = seed;
-            const lower = theme.toLowerCase();
-
-            if (/monster|scary|horror|creepy|demon|ghost|dark|evil/i.test(lower)) {
-                // HORROR MONSTER
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [5 + y/SIZE*15, 2, 8 + y/SIZE*10];
-                    }
-                }
-                const cx = SIZE/2, cy = SIZE/2;
-                // Body
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        const dx = x - cx, dy = (y - cy - 5) * 0.7;
-                        if (Math.sqrt(dx*dx + dy*dy) < 20 + rand(s++)*8) {
-                            grid[y][x] = [80 + rand(s++)*40, 10, 20];
-                        }
-                    }
-                }
-                // Eyes
-                for (let e = -1; e <= 1; e += 2) {
-                    circle(grid, cx + e*10, cy-8, 5, [220, 220, 100]);
-                    circle(grid, cx + e*10, cy-8, 2, [200, 0, 0]);
-                }
-                // Mouth
-                for (let y = cy+8; y <= cy+14; y++) {
-                    for (let x = cx-12; x <= cx+12; x++) {
-                        if (inBounds(x, y) && Math.abs(x-cx) < 13 - Math.abs(y-cy-11)*1.5) {
-                            grid[y][x] = [150, 0, 0];
-                        }
-                    }
-                }
-                // Teeth
-                for (let t = cx-10; t <= cx+10; t += 2) {
-                    if (inBounds(t, cy+10)) grid[cy+10][t] = [255, 255, 255];
-                    if (inBounds(t, cy+11)) grid[cy+11][t] = [255, 255, 255];
-                }
-                // Tentacles
-                for (let t = 0; t < 6; t++) {
-                    let tx = cx + (rand(s++)-0.5)*25;
-                    let ty = cy + 15 + rand(s++)*10;
-                    for (let i = 0; i < 12; i++) {
-                        tx += (rand(s++)-0.5)*3;
-                        ty += rand(s++)*2;
-                        if (inBounds(Math.round(tx), Math.round(ty))) {
-                            circle(grid, Math.round(tx), Math.round(ty), 2, [50, 15, 40]);
-                        }
-                    }
-                }
-            } else if (/fantasy|dragon|castle|magic|wizard|knight/i.test(lower)) {
-                // FANTASY CASTLE
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [15 + y/SIZE*20, 10 + y/SIZE*25, 50 + y/SIZE*40];
-                    }
-                }
-                // Stars
-                for (let i = 0; i < 50; i++) {
-                    const sx = Math.floor(rand(s++)*SIZE);
-                    const sy = Math.floor(rand(s++)*SIZE*0.5);
-                    if (inBounds(sx, sy)) grid[sy][sx] = [255, 255, 200];
-                }
-                // Castle
-                rect(grid, SIZE/2-15, SIZE-45, SIZE/2+15, SIZE-20, [100, 90, 110]);
-                for (let t = 0; t < 3; t++) {
-                    const tx = SIZE/2 - 10 + t*10;
-                    rect(grid, tx-3, SIZE-55, tx+3, SIZE-20, [120, 110, 130]);
-                    rect(grid, tx-2, SIZE-60, tx+2, SIZE-55, [180, 40, 40]);
-                }
-                // Gate
-                rect(grid, SIZE/2-4, SIZE-30, SIZE/2+4, SIZE-20, [40, 30, 20]);
-                // Moon
-                circle(grid, SIZE-20, 20, 12, [255, 250, 200]);
-            } else if (/nature|forest|mountain|tree|sunset|ocean|flower|landscape/i.test(lower)) {
-                // NATURE
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [100 + y/SIZE*50, 160 + y/SIZE*30, 220 - y/SIZE*30];
-                    }
-                }
-                circle(grid, SIZE-25, 20, 10, [255, 220, 50]);
-                rect(grid, 0, SIZE-25, SIZE-1, SIZE-1, [34, 139, 34]);
-                for (let t = 0; t < 6; t++) {
-                    const tx = 10 + t*15;
-                    rect(grid, tx-2, SIZE-50, tx+2, SIZE-25, [80, 50, 20]);
-                    circle(grid, tx, SIZE-50, 12, [20, 120, 20]);
-                    circle(grid, tx-5, SIZE-45, 8, [30, 140, 30]);
-                    circle(grid, tx+5, SIZE-45, 8, [25, 130, 25]);
-                }
-            } else if (/space|sci.fi|spaceship|alien|planet|star|galaxy/i.test(lower)) {
-                // SCI-FI
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [5, 5, 25];
-                    }
-                }
-                for (let i = 0; i < 80; i++) {
-                    const sx = Math.floor(rand(s++)*SIZE);
-                    const sy = Math.floor(rand(s++)*SIZE);
-                    if (inBounds(sx, sy)) {
-                        const b = 150 + Math.floor(rand(s++)*105);
-                        grid[sy][sx] = [b, b, b];
-                    }
-                }
-                circle(grid, 30, 40, 15, [60, 120, 200]);
-                // Ship
-                const sx = SIZE-30, sy = SIZE/2;
-                for (let y = sy-8; y <= sy+8; y++) {
-                    for (let x = sx-12; x <= sx+12; x++) {
-                        if (inBounds(x, y) && Math.abs(x-sx) < 13 - Math.abs(y-sy)*0.6) {
-                            grid[y][x] = [180, 180, 200];
-                        }
-                    }
-                }
-                for (let y = sy-3; y <= sy+3; y++) {
-                    for (let x = sx+8; x <= sx+15; x++) {
-                        if (inBounds(x, y)) grid[y][x] = [0, 180, 255];
-                    }
-                }
-            } else if (/cyberpunk|neon|future|city|dystopian/i.test(lower)) {
-                // CYBERPUNK
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [10 + y/SIZE*20, 5 + y/SIZE*10, 10 + y/SIZE*15];
-                    }
-                }
-                for (let b = 0; b < 12; b++) {
-                    const bx = b*8, bh = 30 + Math.floor(rand(s++)*40);
-                    rect(grid, bx, SIZE-bh, bx+7, SIZE-1, [25, 25, 35]);
-                    for (let y = SIZE-bh; y < SIZE; y++) {
-                        for (let x = bx; x < bx+7; x++) {
-                            if ((x-bx)%3 === 1 && (SIZE-y)%5 === 1 && inBounds(x, y)) {
-                                grid[y][x] = [[255,0,255],[0,255,255],[255,255,0]][b%3];
-                            }
-                        }
-                    }
-                }
-            } else if (/ancient|pyramid|egypt|temple/i.test(lower)) {
-                // ANCIENT
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [180 + rand(s++)*30, 140 + rand(s++)*20, 90 + rand(s++)*20];
-                    }
-                }
-                for (let y = 0; y < 25; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [100, 140, 200];
-                    }
-                }
-                const px = SIZE/2, py = SIZE-20;
-                for (let y = py-40; y <= py; y++) {
-                    const w = (py-y)*1.2;
-                    for (let x = px-w/2; x <= px+w/2; x++) {
-                        if (inBounds(Math.floor(x), y)) grid[y][Math.floor(x)] = [200, 170, 100];
-                    }
-                }
-            } else if (/cute|cat|dog|kitten|puppy|animal/i.test(lower)) {
-                // CUTE ANIMAL
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [240, 220, 235];
-                    }
-                }
-                const cx = SIZE/2, cy = SIZE/2;
-                circle(grid, cx, cy, 18, [255, 200, 180]);
-                for (let e = -1; e <= 1; e += 2) {
-                    circle(grid, cx + e*8, cy-3, 5, [255, 255, 255]);
-                    circle(grid, cx + e*8, cy-3, 2, [40, 40, 40]);
-                    if (inBounds(cx+e*8-2, cy-5)) grid[cy-5][cx+e*8-2] = [255, 255, 255];
-                }
-                // Smile
-                for (let x = cx-5; x <= cx+5; x++) {
-                    const my = cy+7 + Math.sin((x-cx)*0.4)*2;
-                    if (inBounds(x, Math.floor(my))) grid[Math.floor(my)][x] = [200, 100, 120];
-                }
-                // Blush
-                for (let b = -1; b <= 1; b += 2) {
-                    circle(grid, cx + b*11, cy+4, 3, [255, 180, 180]);
-                }
-                // Ears
-                circle(grid, cx-14, cy-14, 6, [255, 200, 180]);
-                circle(grid, cx+14, cy-14, 6, [255, 200, 180]);
-            } else {
-                // ABSTRACT/MIXED
-                const h = hash(theme);
-                for (let y = 0; y < SIZE; y++) {
-                    for (let x = 0; x < SIZE; x++) {
-                        grid[y][x] = [
-                            Math.floor(Math.abs(Math.sin(h + x*0.1 + y*0.15))*200) + 20,
-                            Math.floor(Math.abs(Math.cos(h + x*0.08 + y*0.12))*200) + 20,
-                            Math.floor(Math.abs(Math.sin(h + x*0.12 + y*0.09))*200) + 20
-                        ];
-                    }
-                }
-                for (let i = 0; i < 8; i++) {
-                    const sx = Math.floor(rand(s++)*SIZE);
-                    const sy = Math.floor(rand(s++)*SIZE);
-                    const color = [Math.floor(rand(s++)*255), Math.floor(rand(s++)*255), Math.floor(rand(s++)*255)];
-                    circle(grid, sx, sy, 8 + Math.floor(rand(s++)*15), color);
-                }
+        function generateAIImage(userPrompt) {
+            if (!userPrompt.trim()) {
+                showError('Por favor ingresa una descripción para la imagen.');
+                return;
             }
 
-            return grid;
-        }
-
-        function render(grid) {
-            const imageData = ctx.createImageData(SIZE, SIZE);
-            for (let y = 0; y < SIZE; y++) {
-                for (let x = 0; x < SIZE; x++) {
-                    const idx = (y * SIZE + x) * 4;
-                    imageData.data[idx] = grid[y][x][0];
-                    imageData.data[idx + 1] = grid[y][x][1];
-                    imageData.data[idx + 2] = grid[y][x][2];
-                    imageData.data[idx + 3] = 255;
-                }
-            }
-            // Scale up
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = SIZE;
-            tempCanvas.height = SIZE;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.putImageData(imageData, 0, 0);
-            
-            ctx.imageSmoothingEnabled = false;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(tempCanvas, 0, 0, SIZE * SCALE, SIZE * SCALE);
-        }
-
-        function doGenerate(theme) {
-            if (!theme.trim()) return;
-            
+            showError('');
+            generateBtn.disabled = true;
             loading.classList.add('show');
             resultCard.classList.remove('show');
+
+            const styleKey = styleSelect.value;
+            const styleModifier = STYLE_PROMPTS[styleKey] || STYLE_PROMPTS.pixel_retro;
+            const fullPrompt = `${userPrompt}, ${styleModifier}, high quality pixel art`;
             
-            setTimeout(() => {
-                const grid = generate(theme);
-                render(grid);
-                artTitle.textContent = theme;
+            const seed = Math.floor(Math.random() * 1000000);
+            const encodedPrompt = encodeURIComponent(fullPrompt);
+            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${seed}`;
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+
+            img.onload = () => {
+                const pixelResolution = parseInt(sizeSelect.value, 10) || 64;
+                renderPixelatedImage(img, pixelResolution);
+
+                artTitle.textContent = userPrompt;
+                artSubtitle.textContent = `Pixel Grid: ${pixelResolution}×${pixelResolution} • IA Pollinations`;
+                
                 loading.classList.remove('show');
                 resultCard.classList.add('show');
-            }, 300);
+                generateBtn.disabled = false;
+            };
+
+            img.onerror = () => {
+                loading.classList.remove('show');
+                generateBtn.disabled = false;
+                showError('Hubo un problema generando la imagen. Por favor intenta de nuevo.');
+            };
+
+            img.src = imageUrl;
         }
 
-        generateBtn.addEventListener('click', () => doGenerate(themeInput.value));
-        
+        function renderPixelatedImage(img, pixelGridSize) {
+            // Dibuja en un canvas temporal pequeño para forzar el entramado de píxeles
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = pixelGridSize;
+            offscreenCanvas.height = pixelGridSize;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+
+            offscreenCtx.drawImage(img, 0, 0, pixelGridSize, pixelGridSize);
+
+            // Re-escala de vuelta al canvas principal desactivando la suavización para mantener bordes limpios
+            ctx.imageSmoothingEnabled = false;
+            ctx.mozImageSmoothingEnabled = false;
+            ctx.webkitImageSmoothingEnabled = false;
+            ctx.msImageSmoothingEnabled = false;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(offscreenCanvas, 0, 0, pixelGridSize, pixelGridSize, 0, 0, canvas.width, canvas.height);
+        }
+
+        // Descargar la imagen del canvas
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            const cleanTitle = artTitle.textContent.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            link.download = `pixelmind_${cleanTitle || 'art'}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        generateBtn.addEventListener('click', () => generateAIImage(themeInput.value));
+
         themeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') doGenerate(themeInput.value);
+            if (e.key === 'Enter') generateAIImage(themeInput.value);
         });
 
         chips.forEach(chip => {
             chip.addEventListener('click', () => {
                 const theme = chip.dataset.theme;
                 themeInput.value = theme;
-                doGenerate(theme);
+                generateAIImage(theme);
             });
         });
 
-        // Generate initial art
-        setTimeout(() => doGenerate('scary monster'), 500);
+        // Generar una imagen inicial al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            themeInput.value = "Monstruo aterrador de las sombras";
+            generateAIImage(themeInput.value);
+        });
     </script>
 </body>
 </html>
